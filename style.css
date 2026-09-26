@@ -15,13 +15,15 @@ body {
     text-align: center;
 }
 
-/* --- СТИЛИ ДЛЯ ВАШЕЙ КАРТИНКИ (БАННЕРА) --- */
+/* --- СТИЛИ ДЛЯ КАРТИНКИ (БАННЕРА) --- */
 .main-banner {
     width: 100%;
+    max-width: 250px; /* Ограничиваем ширину, чтобы картинка не была огромной */
     height: auto;
     border-radius: 15px;
-    margin-bottom: 30px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6); /* Тень для объема */
+    margin: 0 auto 20px auto; /* Центрируем по горизонтали и добавляем отступ снизу */
+    display: block;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5); /* Тень для объема */
     object-fit: cover;
 }
 
@@ -181,12 +183,11 @@ h2 {
 }
 
 /* Задержки для эффекта "водопада" */
-.container > *:nth-child(1) { animation-delay: 0.1s; } /* Картинка */
-.container > *:nth-child(2) { animation-delay: 0.3s; } /* Заголовок */
-.container > *:nth-child(3) { animation-delay: 0.5s; } /* Приветствие */
-.container > *:nth-child(4) { animation-delay: 0.7s; } /* Инфо */
-.container > *:nth-child(5) { animation-delay: 0.9s; } /* Карты */
-.container > *:nth-child(6) { animation-delay: 1.1s; } /* Соцсети */
+.container > *:nth-child(1) { animation-delay: 0.1s; } /* Заголовок */
+.container > *:nth-child(2) { animation-delay: 0.3s; } /* Приветствие */
+.container > *:nth-child(3) { animation-delay: 0.5s; } /* Инфо */
+.container > *:nth-child(4) { animation-delay: 0.7s; } /* Карты */
+.container > *:nth-child(5) { animation-delay: 0.9s; } /* Соцсети + Баннер */
 
 /* Адаптив для больших экранов */
 @media (min-width: 500px) {
