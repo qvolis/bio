@@ -7,7 +7,7 @@ fetch('https://api.counterapi.dev/v1/qvolis-bio/profile-views/up')
             counter.textContent = '👁 ' + data.count;
         } else {
             const counter = document.getElementById('visit-counter');
-            if (counter) counter.textContent = '👁 —';
+            if (counter) counter.textContent = '👁';
         }
     })
     .catch(error => {
