@@ -85,7 +85,7 @@ h1 {
     text-align: right;
 }
 
-/* --- КЛИКАБЕЛЬНАЯ ПЛАШКА "МОГУ СДЕЛАТЬ САЙТ ИЛИ ПРЕЗЕНТАЦИЮ" --- */
+/* --- КЛИКАБЕЛЬНАЯ ПЛАШКА --- */
 .order-card {
     display: block;
     background: linear-gradient(135deg, #0088cc, #64b5f6);
