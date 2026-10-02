@@ -1,11 +1,13 @@
-// Счётчик посещений через CountAPI
-// Каждый уникальный ключ = отдельный счётчик
-fetch('https://api.countapi.xyz/hit/qvolis-bio/visits')
+// Счётчик посещений через CounterAPI.dev (рабочий сервис)
+fetch('https://api.counterapi.dev/v1/qvolis-bio/profile-views/up')
     .then(response => response.json())
     .then(data => {
         const counter = document.getElementById('visit-counter');
-        if (counter) {
-            counter.textContent = '👁 ' + data.value;
+        if (counter && data && data.count !== undefined) {
+            counter.textContent = '👁 ' + data.count;
+        } else {
+            const counter = document.getElementById('visit-counter');
+            if (counter) counter.textContent = '👁 —';
         }
     })
     .catch(error => {
