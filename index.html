@@ -8,14 +8,26 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
-    <!-- Анимированная сетка на фоне -->
+    <!-- ФОНОВЫЕ СЛОИ -->
     <div class="grid-bg"></div>
-    <!-- Свечение слева сверху -->
+    <div class="scan-lines"></div>
+    <div class="beam beam-1"></div>
+    <div class="beam beam-2"></div>
     <div class="glow glow-1"></div>
-    <!-- Свечение справа снизу -->
     <div class="glow glow-2"></div>
+    <div class="corner-frame"></div>
 
-    <!-- Счётчик -->
+    <!-- БЕГУЩАЯ СТРОКА СВЕРХУ -->
+    <div class="top-stripe">
+        <div class="stripe-track">
+            <span>qvolis</span><span>•</span><span>17 лет</span><span>•</span><span>Беларусь</span><span>•</span>
+            <span>моделирование</span><span>•</span><span>сайты</span><span>•</span><span>презентации</span><span>•</span>
+            <span>qvolis</span><span>•</span><span>17 лет</span><span>•</span><span>Беларусь</span><span>•</span>
+            <span>моделирование</span><span>•</span><span>сайты</span><span>•</span><span>презентации</span><span>•</span>
+        </div>
+    </div>
+
+    <!-- СЧЁТЧИК -->
     <div class="visit-counter">
         <span class="dot"></span>127
     </div>
@@ -24,7 +36,11 @@
 
         <!-- ГЛАВНЫЙ ЭКРАН -->
         <section class="hero">
-            <div class="section-label">// ПРИВЕТ</div>
+            <div class="section-label">
+                <span class="label-line"></span>
+                <span>// ПРИВЕТ</span>
+                <span class="label-line"></span>
+            </div>
             <p class="hero-sub">
                 Очень рад, что вы зашли на мой сайт. Занимаюсь моделированием,
                 создаю сайты и презентации.
@@ -33,17 +49,21 @@
 
         <!-- ОБО МНЕ -->
         <section class="section">
-            <div class="section-label">// ОБО МНЕ</div>
+            <div class="section-label">
+                <span class="label-line"></span>
+                <span>// ОБО МНЕ</span>
+                <span class="label-line"></span>
+            </div>
             <div class="info-grid">
-                <div class="info-card corner-marks">
+                <div class="info-card">
                     <span class="info-label">ВОЗРАСТ</span>
                     <span class="info-value">17 лет</span>
                 </div>
-                <div class="info-card corner-marks">
+                <div class="info-card">
                     <span class="info-label">СТРАНА</span>
                     <span class="info-value">Беларусь</span>
                 </div>
-                <div class="info-card corner-marks">
+                <div class="info-card">
                     <span class="info-label">ЗАНЯТИЕ</span>
                     <span class="info-value">Моделирование и сайты</span>
                 </div>
@@ -52,43 +72,62 @@
 
         <!-- УСЛУГИ -->
         <section class="section">
-            <div class="section-label">// УСЛУГИ</div>
-            <a href="https://t.me/log0voas" class="order-card corner-marks" target="_blank">
+            <div class="section-label">
+                <span class="label-line"></span>
+                <span>// УСЛУГИ</span>
+                <span class="label-line"></span>
+            </div>
+            <a href="https://t.me/log0voas" class="order-card" target="_blank">
                 <div class="order-title">Могу сделать сайт или презентацию</div>
-                <div class="order-subtitle">Нажмите, чтобы написать мне в Telegram <span class="arrow">→</span></div>
+                <div class="order-subtitle">Нажмите, чтобы написать в Telegram <span class="arrow">→</span></div>
             </a>
         </section>
 
         <!-- КАРТЫ MINECRAFT -->
         <section class="section">
-            <div class="section-label">// КАРТЫ MINECRAFT</div>
-            <div class="map-card corner-marks">
-                <img src="map1.webp" alt="Скриншот карты Лесопосадки" class="map-image">
+            <div class="section-label">
+                <span class="label-line"></span>
+                <span>// КАРТЫ MINECRAFT</span>
+                <span class="label-line"></span>
+            </div>
+            <div class="map-card">
+                <div class="map-image-wrap">
+                    <img src="map1.webp" alt="Скриншот карты Лесопосадки" class="map-image">
+                    <div class="image-scan"></div>
+                </div>
                 <div class="map-body">
                     <h3>Лесопосадки</h3>
                     <p>Здесь будет ваше описание карты. Например: уютная карта с лесами и полями для выживания.</p>
-                    <a href="#" class="download-btn" target="_blank">СКАЧАТЬ</a>
+                    <a href="#" class="download-btn" target="_blank">
+                        <span class="btn-line"></span>
+                        СКАЧАТЬ
+                        <span class="btn-line"></span>
+                    </a>
                 </div>
             </div>
         </section>
 
         <!-- СОЦСЕТИ -->
         <section class="section">
-            <div class="section-label">// СОЦСЕТИ</div>
+            <div class="section-label">
+                <span class="label-line"></span>
+                <span>// СОЦСЕТИ</span>
+                <span class="label-line"></span>
+            </div>
             <div class="social-grid">
-                <a href="https://t.me/log0voas" class="social-card corner-marks" target="_blank">
+                <a href="https://t.me/log0voas" class="social-card" target="_blank">
                     <span class="social-name">Telegram</span>
                     <span class="social-arrow">↗</span>
                 </a>
-                <a href="https://discord.gg/s5s2uu9j" class="social-card corner-marks" target="_blank">
+                <a href="https://discord.gg/s5s2uu9j" class="social-card" target="_blank">
                     <span class="social-name">Discord</span>
                     <span class="social-arrow">↗</span>
                 </a>
-                <a href="https://www.tiktok.com/@zhanitas?_r=1&_t=ZP-9A3Y2t6bqta" class="social-card corner-marks" target="_blank">
+                <a href="https://www.tiktok.com/@zhanitas?_r=1&_t=ZP-9A3Y2t6bqta" class="social-card" target="_blank">
                     <span class="social-name">TikTok</span>
                     <span class="social-arrow">↗</span>
                 </a>
-                <a href="https://open.spotify.com/user/31n6vi5csy6qyvwcrvzqtqoil5ge?si=YVboFvieSAmZfcFbPXDnzA&utm_source=copy-link" class="social-card corner-marks" target="_blank">
+                <a href="https://open.spotify.com/user/31n6vi5csy6qyvwcrvzqtqoil5ge?si=YVboFvieSAmZfcFbPXDnzA&utm_source=copy-link" class="social-card" target="_blank">
                     <span class="social-name">Spotify</span>
                     <span class="social-arrow">↗</span>
                 </a>
