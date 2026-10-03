@@ -174,20 +174,24 @@ body {
     height: 32px;
     z-index: 99;
     box-shadow: 0 0 25px var(--red-glow);
-    display: flex;
-    align-items: center;
+    white-space: nowrap;
 }
 
-/* Надпись теперь едет СЛЕВА НАПРАВО */
 .wanted-track {
-    display: inline-flex;
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    display: flex;
+    align-items: center;
     gap: 60px;
     white-space: nowrap;
-    margin-left: -200%;
     animation: wantedScroll 15s linear infinite;
+    will-change: transform;
 }
 
 .wanted {
+    flex-shrink: 0;
     font-weight: 800;
     font-size: 13px;
     letter-spacing: 3px;
@@ -198,13 +202,14 @@ body {
     background: rgba(0, 0, 0, 0.25);
     border-radius: var(--radius-pill);
     border: 1px solid rgba(255, 255, 255, 0.4);
+    white-space: nowrap;
     animation: wantedPulse 1.5s ease-in-out infinite;
 }
 
 /* Движение слева → направо */
 @keyframes wantedScroll {
-    from { transform: translateX(0); }
-    to { transform: translateX(200%); }
+    from { transform: translateX(-100%); }
+    to { transform: translateX(100vw); }
 }
 
 @keyframes wantedPulse {
