@@ -8,6 +8,9 @@
     --red-soft: rgba(255, 45, 45, 0.15);
     --white: #ffffff;
     --bg: #0a0000;
+    --radius: 14px;
+    --radius-sm: 10px;
+    --radius-pill: 100px;
 }
 
 body {
@@ -23,7 +26,6 @@ body {
 
 /* ==================== ФОНОВЫЕ СЛОИ ==================== */
 
-/* Анимированная сетка */
 .grid-bg {
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
@@ -41,7 +43,6 @@ body {
     to { background-position: 40px 40px; }
 }
 
-/* Сканирующие горизонтальные линии */
 .scan-lines {
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
@@ -62,7 +63,6 @@ body {
     to { background-position: 0 100px; }
 }
 
-/* Светящиеся лучи */
 .beam {
     position: fixed;
     width: 200%;
@@ -95,7 +95,6 @@ body {
     50% { transform: translateX(-20%); opacity: 0.9; }
 }
 
-/* Пульсирующие свечения */
 .glow {
     position: fixed;
     width: 400px;
@@ -125,11 +124,11 @@ body {
     50% { opacity: 0.7; transform: scale(1.2); }
 }
 
-/* Угловая рамка по краям */
 .corner-frame {
     position: fixed;
     top: 10px; left: 10px; right: 10px; bottom: 10px;
     border: 1px solid rgba(255, 45, 45, 0.2);
+    border-radius: var(--radius);
     pointer-events: none;
     z-index: 1;
     animation: frameGlow 4s ease-in-out infinite;
@@ -148,12 +147,14 @@ body {
     top: -2px; left: -2px;
     border-right: none;
     border-bottom: none;
+    border-top-left-radius: var(--radius);
 }
 
 .corner-frame::after {
     bottom: -2px; right: -2px;
     border-left: none;
     border-top: none;
+    border-bottom-right-radius: var(--radius);
 }
 
 @keyframes frameGlow {
@@ -192,12 +193,12 @@ body {
     to { transform: translateX(-50%); }
 }
 
-/* Выделяем "В РОЗЫСКЕ ИНТЕРПОЛА" */
 .stripe-track .wanted {
     background: var(--white);
     color: var(--red);
     padding: 0 12px;
     font-weight: 800;
+    border-radius: var(--radius-pill);
     animation: blinkWanted 1s steps(2, start) infinite;
     box-shadow: 0 0 15px var(--white);
 }
@@ -214,8 +215,8 @@ body {
     right: 20px;
     background-color: rgba(10, 0, 0, 0.9);
     color: var(--white);
-    padding: 7px 14px;
-    border-radius: 0;
+    padding: 8px 16px;
+    border-radius: var(--radius-pill);
     font-size: 13px;
     font-weight: 600;
     font-family: 'JetBrains Mono', 'Courier New', monospace;
@@ -276,6 +277,7 @@ body {
     background: linear-gradient(90deg, transparent, var(--red), transparent);
     position: relative;
     overflow: hidden;
+    border-radius: var(--radius-pill);
 }
 
 .label-line::after {
@@ -284,6 +286,7 @@ body {
     top: 0; left: -50%;
     width: 50%; height: 100%;
     background: var(--white);
+    border-radius: var(--radius-pill);
     animation: lineSlide 3s linear infinite;
 }
 
@@ -305,13 +308,15 @@ body {
     margin: 0;
     max-width: 520px;
     border-left: 3px solid var(--red);
-    padding-left: 18px;
+    padding: 12px 18px;
+    background-color: rgba(15, 0, 0, 0.5);
+    border-radius: var(--radius);
     animation: borderPulse 3s ease-in-out infinite;
 }
 
 @keyframes borderPulse {
-    0%, 100% { border-color: var(--red); padding-left: 18px; }
-    50% { border-color: var(--white); padding-left: 22px; }
+    0%, 100% { border-color: var(--red); }
+    50% { border-color: var(--white); }
 }
 
 /* ==================== СЕКЦИИ ==================== */
@@ -330,7 +335,7 @@ body {
     background-color: rgba(15, 0, 0, 0.75);
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 45, 45, 0.3);
-    border-radius: 0;
+    border-radius: var(--radius);
     padding: 18px 22px;
     display: flex;
     justify-content: space-between;
@@ -350,6 +355,7 @@ body {
     transform: scaleY(0);
     transform-origin: top;
     transition: transform 0.3s;
+    border-radius: var(--radius-pill);
 }
 
 .info-card:hover::before {
@@ -383,7 +389,7 @@ body {
     background: linear-gradient(135deg, rgba(30, 0, 0, 0.95), rgba(10, 0, 0, 0.95));
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 45, 45, 0.4);
-    border-radius: 0;
+    border-radius: var(--radius);
     padding: 26px;
     text-decoration: none;
     position: relative;
@@ -456,7 +462,7 @@ body {
     background-color: rgba(15, 0, 0, 0.75);
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 45, 45, 0.3);
-    border-radius: 0;
+    border-radius: var(--radius);
     overflow: hidden;
     transition: all 0.3s;
 }
@@ -527,7 +533,7 @@ body {
     color: var(--red);
     border: 1px solid var(--red);
     padding: 15px;
-    border-radius: 0;
+    border-radius: var(--radius-sm);
     text-decoration: none;
     font-weight: 700;
     font-size: 14px;
@@ -564,6 +570,7 @@ body {
     background: currentColor;
     max-width: 40px;
     opacity: 0.5;
+    border-radius: var(--radius-pill);
 }
 
 /* ==================== СОЦСЕТИ ==================== */
@@ -577,7 +584,7 @@ body {
     background-color: rgba(15, 0, 0, 0.75);
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 45, 45, 0.3);
-    border-radius: 0;
+    border-radius: var(--radius);
     padding: 20px;
     text-decoration: none;
     display: flex;
@@ -648,6 +655,7 @@ body {
     background: linear-gradient(90deg, transparent, var(--red), transparent);
     max-width: 80px;
     opacity: 0.6;
+    border-radius: var(--radius-pill);
     animation: lineGlow 2s ease-in-out infinite;
 }
 
