@@ -62,7 +62,7 @@ body {
     to { background-position: 0 100px; }
 }
 
-/* Светящиеся лучи (диагональные) */
+/* Светящиеся лучи */
 .beam {
     position: fixed;
     width: 200%;
@@ -125,7 +125,7 @@ body {
     50% { opacity: 0.7; transform: scale(1.2); }
 }
 
-/* Угловая рамка по краям экрана */
+/* Угловая рамка по краям */
 .corner-frame {
     position: fixed;
     top: 10px; left: 10px; right: 10px; bottom: 10px;
@@ -190,6 +190,21 @@ body {
 @keyframes stripeScroll {
     from { transform: translateX(0); }
     to { transform: translateX(-50%); }
+}
+
+/* Выделяем "В РОЗЫСКЕ ИНТЕРПОЛА" */
+.stripe-track .wanted {
+    background: var(--white);
+    color: var(--red);
+    padding: 0 12px;
+    font-weight: 800;
+    animation: blinkWanted 1s steps(2, start) infinite;
+    box-shadow: 0 0 15px var(--white);
+}
+
+@keyframes blinkWanted {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.45; }
 }
 
 /* ==================== СЧЁТЧИК ==================== */
@@ -468,7 +483,6 @@ body {
     transform: scale(1.05);
 }
 
-/* Сканирующий луч поверх картинки */
 .image-scan {
     position: absolute;
     top: 0; left: 0;
