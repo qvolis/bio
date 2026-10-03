@@ -162,58 +162,64 @@ body {
     50% { border-color: rgba(255, 45, 45, 0.5); }
 }
 
-/* ==================== КРУТЯЩАЯСЯ НАДПИСЬ "В РОЗЫСКЕ ИНТЕРПОЛА" ==================== */
-.wanted-orbit {
+/* ==================== БЕГУЩАЯ НАДПИСЬ ==================== */
+.wanted-stripe {
     position: fixed;
-    top: 55px;
-    left: 50%;
-    width: 260px;
-    height: 60px;
-    margin-left: -130px;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: var(--red);
+    color: var(--white);
+    overflow: hidden;
+    height: 32px;
+    z-index: 99;
+    box-shadow: 0 0 25px var(--red-glow);
     display: flex;
     align-items: center;
-    justify-content: center;
-    z-index: 101;
-    pointer-events: none;
-    animation: orbitSpin 8s linear infinite;
 }
 
-.wanted-badge {
-    background: var(--white);
-    color: var(--red);
-    padding: 6px 18px;
-    border-radius: var(--radius-pill);
-    font-weight: 800;
-    font-size: 12px;
-    letter-spacing: 2px;
-    font-family: 'JetBrains Mono', 'Courier New', monospace;
-    box-shadow: 0 0 25px var(--white), 0 0 45px var(--red-glow);
+.wanted-track {
+    display: inline-flex;
+    gap: 60px;
     white-space: nowrap;
-    animation: wantedPulse 1.2s ease-in-out infinite;
+    padding-left: 100%;
+    animation: wantedScroll 15s linear infinite;
 }
 
-/* Вращение всей орбиты */
-@keyframes orbitSpin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
+.wanted {
+    font-weight: 800;
+    font-size: 13px;
+    letter-spacing: 3px;
+    font-family: 'JetBrains Mono', 'Courier New', monospace;
+    color: var(--white);
+    text-shadow: 0 0 10px var(--white);
+    padding: 6px 18px;
+    background: rgba(0, 0, 0, 0.25);
+    border-radius: var(--radius-pill);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    animation: wantedPulse 1.5s ease-in-out infinite;
 }
 
-/* Пульсация самой надписи */
+@keyframes wantedScroll {
+    from { transform: translateX(0); }
+    to { transform: translateX(-200%); }
+}
+
 @keyframes wantedPulse {
     0%, 100% { 
-        box-shadow: 0 0 20px var(--white), 0 0 35px var(--red-glow);
-        transform: scale(1);
+        text-shadow: 0 0 10px var(--white);
+        border-color: rgba(255, 255, 255, 0.4);
     }
     50% { 
-        box-shadow: 0 0 35px var(--white), 0 0 60px var(--red-glow);
-        transform: scale(1.08);
+        text-shadow: 0 0 20px var(--white), 0 0 30px var(--white);
+        border-color: rgba(255, 255, 255, 1);
     }
 }
 
 /* ==================== СЧЁТЧИК ==================== */
 .visit-counter {
     position: fixed;
-    top: 40px;
+    top: 50px;
     right: 20px;
     background-color: rgba(10, 0, 0, 0.9);
     color: var(--white);
