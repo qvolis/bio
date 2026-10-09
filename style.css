@@ -901,3 +901,152 @@ body {
         font-size: 64px;
     }
 }
+/* ==================== ДВЕ КНОПКИ УСЛУГ ==================== */
+
+.services-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+}
+
+.service-card {
+    display: block;
+    background: var(--glass);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 22px 24px;
+    text-decoration: none;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.service-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.06), transparent);
+    transition: left 0.8s;
+}
+
+.service-card:hover::before {
+    left: 100%;
+}
+
+.service-card:hover {
+    border-color: var(--border-hover);
+    background: var(--glass-hover);
+    transform: translateY(-3px);
+    box-shadow: 0 16px 50px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+
+/* Шапка карточки: иконка + цена */
+.service-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+}
+
+.service-icon {
+    width: 40px;
+    height: 40px;
+    border: 1px solid var(--border-hover);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    color: var(--white);
+    background: rgba(255, 255, 255, 0.03);
+    transition: all 0.4s;
+}
+
+.service-card:hover .service-icon {
+    background: var(--white);
+    color: var(--black);
+    transform: rotate(-45deg);
+}
+
+/* Цена */
+.service-price {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+    padding: 6px 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-hover);
+    border-radius: var(--radius-pill);
+    transition: all 0.4s;
+}
+
+.service-card:hover .service-price {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: var(--white);
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.15);
+}
+
+.price-value {
+    font-family: var(--mono);
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--white);
+    letter-spacing: -0.5px;
+}
+
+.price-star {
+    font-size: 13px;
+    color: var(--gray-300);
+    transition: color 0.4s;
+}
+
+.service-card:hover .price-star {
+    color: var(--white);
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+}
+
+/* Название и описание */
+.service-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--white);
+    margin-bottom: 6px;
+    letter-spacing: -0.2px;
+}
+
+.service-subtitle {
+    font-size: 12px;
+    color: var(--gray-400);
+    font-family: var(--mono);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+}
+
+/* Стрелка в углу */
+.service-arrow {
+    position: absolute;
+    top: 22px;
+    right: 22px;
+    font-size: 16px;
+    color: var(--gray-400);
+    transition: all 0.3s;
+    opacity: 0;
+}
+
+.service-card:hover .service-arrow {
+    color: var(--white);
+    transform: translate(4px, -4px);
+    opacity: 1;
+}
+
+/* Адаптив: на широких экранах две колонки */
+@media (min-width: 540px) {
+    .services-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
