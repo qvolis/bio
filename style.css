@@ -3,11 +3,16 @@
 }
 
 :root {
-    --red: #ff2d2d;
-    --red-glow: rgba(255, 45, 45, 0.6);
-    --red-soft: rgba(255, 45, 45, 0.15);
     --white: #ffffff;
-    --bg: #0a0000;
+    --gray-100: #e8e8e8;
+    --gray-200: #cccccc;
+    --gray-400: #888888;
+    --gray-600: #444444;
+    --gray-800: #1a1a1a;
+    --gray-900: #0f0f0f;
+    --black: #050505;
+    --glow: rgba(255, 255, 255, 0.6);
+    --glow-soft: rgba(255, 255, 255, 0.15);
     --radius: 14px;
     --radius-sm: 10px;
     --radius-pill: 100px;
@@ -15,7 +20,7 @@
 
 body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, Helvetica, Arial, sans-serif;
-    background-color: var(--bg);
+    background-color: var(--black);
     color: var(--white);
     margin: 0;
     padding: 0;
@@ -30,8 +35,8 @@ body {
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
     background-image:
-        linear-gradient(rgba(255, 45, 45, 0.08) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255, 45, 45, 0.08) 1px, transparent 1px);
+        linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
     background-size: 40px 40px;
     pointer-events: none;
     z-index: 0;
@@ -50,8 +55,8 @@ body {
         0deg,
         transparent,
         transparent 3px,
-        rgba(255, 45, 45, 0.03) 3px,
-        rgba(255, 45, 45, 0.03) 4px
+        rgba(255, 255, 255, 0.025) 3px,
+        rgba(255, 255, 255, 0.025) 4px
     );
     pointer-events: none;
     z-index: 1;
@@ -67,10 +72,10 @@ body {
     position: fixed;
     width: 200%;
     height: 1px;
-    background: linear-gradient(90deg, transparent, var(--red), transparent);
+    background: linear-gradient(90deg, transparent, var(--white), transparent);
     pointer-events: none;
     z-index: 1;
-    opacity: 0.6;
+    opacity: 0.5;
 }
 
 .beam-1 {
@@ -86,13 +91,13 @@ body {
 }
 
 @keyframes beamMove1 {
-    0%, 100% { transform: translateX(-20%); opacity: 0.3; }
-    50% { transform: translateX(20%); opacity: 0.8; }
+    0%, 100% { transform: translateX(-20%); opacity: 0.2; }
+    50% { transform: translateX(20%); opacity: 0.7; }
 }
 
 @keyframes beamMove2 {
-    0%, 100% { transform: translateX(20%); opacity: 0.5; }
-    50% { transform: translateX(-20%); opacity: 0.9; }
+    0%, 100% { transform: translateX(20%); opacity: 0.3; }
+    50% { transform: translateX(-20%); opacity: 0.8; }
 }
 
 .glow {
@@ -108,14 +113,14 @@ body {
 .glow-1 {
     top: -150px;
     left: -150px;
-    background: rgba(255, 45, 45, 0.5);
+    background: rgba(255, 255, 255, 0.35);
     animation: pulse 5s ease-in-out infinite;
 }
 
 .glow-2 {
     bottom: -150px;
     right: -150px;
-    background: rgba(255, 45, 45, 0.4);
+    background: rgba(255, 255, 255, 0.25);
     animation: pulse 5s ease-in-out infinite 2.5s;
 }
 
@@ -127,7 +132,7 @@ body {
 .corner-frame {
     position: fixed;
     top: 10px; left: 10px; right: 10px; bottom: 10px;
-    border: 1px solid rgba(255, 45, 45, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.15);
     border-radius: var(--radius);
     pointer-events: none;
     z-index: 1;
@@ -140,7 +145,7 @@ body {
     position: absolute;
     width: 30px;
     height: 30px;
-    border: 2px solid var(--red);
+    border: 2px solid var(--white);
 }
 
 .corner-frame::before {
@@ -158,8 +163,8 @@ body {
 }
 
 @keyframes frameGlow {
-    0%, 100% { border-color: rgba(255, 45, 45, 0.15); }
-    50% { border-color: rgba(255, 45, 45, 0.5); }
+    0%, 100% { border-color: rgba(255, 255, 255, 0.1); }
+    50% { border-color: rgba(255, 255, 255, 0.4); }
 }
 
 /* ==================== БЕГУЩАЯ НАДПИСЬ ==================== */
@@ -168,12 +173,12 @@ body {
     top: 0;
     left: 0;
     right: 0;
-    background: var(--red);
-    color: var(--white);
+    background: var(--white);
+    color: var(--black);
     overflow: hidden;
     height: 32px;
     z-index: 99;
-    box-shadow: 0 0 25px var(--red-glow);
+    box-shadow: 0 0 25px var(--glow);
     white-space: nowrap;
 }
 
@@ -197,11 +202,11 @@ body {
     letter-spacing: 3px;
     font-family: 'JetBrains Mono', 'Courier New', monospace;
     color: var(--white);
-    text-shadow: 0 0 10px var(--white);
+    text-shadow: 0 0 10px var(--glow);
     padding: 6px 18px;
-    background: rgba(0, 0, 0, 0.25);
+    background: var(--black);
     border-radius: var(--radius-pill);
-    border: 1px solid rgba(255, 255, 255, 0.4);
+    border: 1px solid var(--white);
     white-space: nowrap;
     animation: wantedPulse 1.5s ease-in-out infinite;
 }
@@ -214,12 +219,12 @@ body {
 
 @keyframes wantedPulse {
     0%, 100% { 
-        text-shadow: 0 0 10px var(--white);
-        border-color: rgba(255, 255, 255, 0.4);
+        text-shadow: 0 0 10px var(--glow);
+        box-shadow: 0 0 0 rgba(255, 255, 255, 0);
     }
     50% { 
         text-shadow: 0 0 20px var(--white), 0 0 30px var(--white);
-        border-color: rgba(255, 255, 255, 1);
+        box-shadow: 0 0 20px var(--glow);
     }
 }
 
@@ -228,33 +233,33 @@ body {
     position: fixed;
     top: 50px;
     right: 20px;
-    background-color: rgba(10, 0, 0, 0.9);
+    background-color: rgba(5, 5, 5, 0.9);
     color: var(--white);
     padding: 8px 16px;
     border-radius: var(--radius-pill);
     font-size: 13px;
     font-weight: 600;
     font-family: 'JetBrains Mono', 'Courier New', monospace;
-    border: 1px solid var(--red);
+    border: 1px solid var(--white);
     z-index: 100;
     display: flex;
     align-items: center;
     gap: 8px;
-    box-shadow: 0 0 20px var(--red-glow);
+    box-shadow: 0 0 20px var(--glow-soft);
     animation: counterPulse 3s ease-in-out infinite;
 }
 
 @keyframes counterPulse {
-    0%, 100% { box-shadow: 0 0 20px var(--red-glow); }
-    50% { box-shadow: 0 0 35px var(--red-glow); }
+    0%, 100% { box-shadow: 0 0 15px var(--glow-soft); }
+    50% { box-shadow: 0 0 30px var(--glow); }
 }
 
 .dot {
     width: 6px;
     height: 6px;
-    background-color: var(--red);
+    background-color: var(--white);
     border-radius: 50%;
-    box-shadow: 0 0 10px var(--red);
+    box-shadow: 0 0 10px var(--white);
     animation: blink 1.5s ease-in-out infinite;
 }
 
@@ -280,16 +285,17 @@ body {
     font-size: 11px;
     font-weight: 700;
     letter-spacing: 3px;
-    color: var(--red);
+    color: var(--white);
     text-transform: uppercase;
     margin-bottom: 18px;
     font-family: 'JetBrains Mono', 'Courier New', monospace;
+    opacity: 0.85;
 }
 
 .label-line {
     flex: 1;
     height: 1px;
-    background: linear-gradient(90deg, transparent, var(--red), transparent);
+    background: linear-gradient(90deg, transparent, var(--white), transparent);
     position: relative;
     overflow: hidden;
     border-radius: var(--radius-pill);
@@ -319,19 +325,19 @@ body {
 .hero-sub {
     font-size: 17px;
     line-height: 1.7;
-    color: #d0d0d0;
+    color: var(--gray-200);
     margin: 0;
     max-width: 520px;
-    border-left: 3px solid var(--red);
+    border-left: 3px solid var(--white);
     padding: 12px 18px;
-    background-color: rgba(15, 0, 0, 0.5);
+    background-color: rgba(255, 255, 255, 0.03);
     border-radius: var(--radius);
     animation: borderPulse 3s ease-in-out infinite;
 }
 
 @keyframes borderPulse {
-    0%, 100% { border-color: var(--red); }
-    50% { border-color: var(--white); }
+    0%, 100% { border-color: var(--white); }
+    50% { border-color: var(--gray-400); }
 }
 
 /* ==================== СЕКЦИИ ==================== */
@@ -347,9 +353,9 @@ body {
 }
 
 .info-card {
-    background-color: rgba(15, 0, 0, 0.75);
+    background-color: rgba(255, 255, 255, 0.03);
     backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 45, 45, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.15);
     border-radius: var(--radius);
     padding: 18px 22px;
     display: flex;
@@ -366,7 +372,7 @@ body {
     top: 0; left: 0;
     width: 3px;
     height: 100%;
-    background: var(--red);
+    background: var(--white);
     transform: scaleY(0);
     transform-origin: top;
     transition: transform 0.3s;
@@ -378,14 +384,14 @@ body {
 }
 
 .info-card:hover {
-    border-color: var(--red);
-    box-shadow: 0 0 30px var(--red-glow), inset 0 0 20px rgba(255, 45, 45, 0.1);
+    border-color: var(--white);
+    box-shadow: 0 0 30px var(--glow-soft), inset 0 0 20px rgba(255, 255, 255, 0.05);
     transform: translateX(4px);
 }
 
 .info-label {
     font-size: 11px;
-    color: var(--red);
+    color: var(--gray-400);
     font-weight: 700;
     letter-spacing: 2px;
     font-family: 'JetBrains Mono', 'Courier New', monospace;
@@ -401,9 +407,9 @@ body {
 /* ==================== ПЛАШКА УСЛУГ ==================== */
 .order-card {
     display: block;
-    background: linear-gradient(135deg, rgba(30, 0, 0, 0.95), rgba(10, 0, 0, 0.95));
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
     backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 45, 45, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: var(--radius);
     padding: 26px;
     text-decoration: none;
@@ -417,7 +423,7 @@ body {
     position: absolute;
     top: 0; left: -100%;
     width: 100%; height: 2px;
-    background: linear-gradient(90deg, transparent, var(--red), var(--white), var(--red), transparent);
+    background: linear-gradient(90deg, transparent, var(--white), transparent);
     animation: topSweep 4s linear infinite;
 }
 
@@ -431,7 +437,7 @@ body {
     position: absolute;
     bottom: 0; right: -100%;
     width: 100%; height: 2px;
-    background: linear-gradient(90deg, transparent, var(--red), var(--white), var(--red), transparent);
+    background: linear-gradient(90deg, transparent, var(--white), transparent);
     animation: bottomSweep 4s linear infinite 2s;
 }
 
@@ -441,8 +447,8 @@ body {
 }
 
 .order-card:hover {
-    border-color: var(--red);
-    box-shadow: 0 0 40px var(--red-glow);
+    border-color: var(--white);
+    box-shadow: 0 0 40px var(--glow-soft);
     transform: translateY(-3px);
 }
 
@@ -455,14 +461,14 @@ body {
 
 .order-subtitle {
     font-size: 14px;
-    color: #a0a0a0;
+    color: var(--gray-400);
     display: flex;
     align-items: center;
     gap: 8px;
 }
 
 .order-subtitle .arrow {
-    color: var(--red);
+    color: var(--white);
     transition: transform 0.3s;
     display: inline-block;
     font-weight: 700;
@@ -474,17 +480,17 @@ body {
 
 /* ==================== КАРТОЧКА КАРТЫ ==================== */
 .map-card {
-    background-color: rgba(15, 0, 0, 0.75);
+    background-color: rgba(255, 255, 255, 0.03);
     backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 45, 45, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.15);
     border-radius: var(--radius);
     overflow: hidden;
     transition: all 0.3s;
 }
 
 .map-card:hover {
-    border-color: var(--red);
-    box-shadow: 0 0 40px var(--red-glow);
+    border-color: var(--white);
+    box-shadow: 0 0 40px var(--glow-soft);
 }
 
 .map-image-wrap {
@@ -496,12 +502,15 @@ body {
     width: 100%;
     height: auto;
     display: block;
-    border-bottom: 1px solid rgba(255, 45, 45, 0.3);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
     transition: transform 0.6s;
+    /* Делаем изображение чёрно-белым */
+    filter: grayscale(100%) contrast(1.1);
 }
 
 .map-card:hover .map-image {
     transform: scale(1.05);
+    filter: grayscale(100%) contrast(1.2) brightness(1.1);
 }
 
 .image-scan {
@@ -510,7 +519,7 @@ body {
     width: 100%;
     height: 100%;
     pointer-events: none;
-    background: linear-gradient(180deg, transparent 0%, rgba(255, 45, 45, 0.3) 50%, transparent 100%);
+    background: linear-gradient(180deg, transparent 0%, rgba(255, 255, 255, 0.25) 50%, transparent 100%);
     animation: imageScan 3s linear infinite;
 }
 
@@ -533,7 +542,7 @@ body {
 .map-body p {
     font-size: 14px;
     line-height: 1.6;
-    color: #a0a0a0;
+    color: var(--gray-400);
     margin: 0 0 20px 0;
 }
 
@@ -545,8 +554,8 @@ body {
     gap: 12px;
     width: 100%;
     background-color: transparent;
-    color: var(--red);
-    border: 1px solid var(--red);
+    color: var(--white);
+    border: 1px solid var(--white);
     padding: 15px;
     border-radius: var(--radius-sm);
     text-decoration: none;
@@ -565,7 +574,7 @@ body {
     position: absolute;
     top: 0; left: -100%;
     width: 100%; height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 45, 45, 0.3), transparent);
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
     transition: left 0.6s;
 }
 
@@ -574,9 +583,9 @@ body {
 }
 
 .download-btn:hover {
-    background-color: var(--red);
-    color: var(--white);
-    box-shadow: 0 0 30px var(--red-glow);
+    background-color: var(--white);
+    color: var(--black);
+    box-shadow: 0 0 30px var(--glow);
 }
 
 .btn-line {
@@ -596,9 +605,9 @@ body {
 }
 
 .social-card {
-    background-color: rgba(15, 0, 0, 0.75);
+    background-color: rgba(255, 255, 255, 0.03);
     backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 45, 45, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.15);
     border-radius: var(--radius);
     padding: 20px;
     text-decoration: none;
@@ -616,7 +625,7 @@ body {
     bottom: 0; left: 0;
     width: 100%;
     height: 2px;
-    background: var(--red);
+    background: var(--white);
     transform: scaleX(0);
     transform-origin: left;
     transition: transform 0.3s;
@@ -627,9 +636,9 @@ body {
 }
 
 .social-card:hover {
-    border-color: var(--red);
-    background-color: rgba(30, 0, 0, 0.9);
-    box-shadow: 0 0 30px var(--red-glow);
+    border-color: var(--white);
+    background-color: rgba(255, 255, 255, 0.07);
+    box-shadow: 0 0 30px var(--glow-soft);
     transform: translateY(-3px);
 }
 
@@ -641,13 +650,13 @@ body {
 
 .social-arrow {
     font-size: 16px;
-    color: #666;
+    color: var(--gray-400);
     transition: all 0.3s;
     font-weight: 700;
 }
 
 .social-card:hover .social-arrow {
-    color: var(--red);
+    color: var(--white);
     transform: translate(4px, -4px);
 }
 
@@ -658,7 +667,7 @@ body {
     gap: 15px;
     padding-top: 30px;
     font-size: 11px;
-    color: #666;
+    color: var(--gray-400);
     letter-spacing: 3px;
     font-family: 'JetBrains Mono', 'Courier New', monospace;
     justify-content: center;
@@ -667,16 +676,16 @@ body {
 .footer-line {
     flex: 1;
     height: 1px;
-    background: linear-gradient(90deg, transparent, var(--red), transparent);
+    background: linear-gradient(90deg, transparent, var(--white), transparent);
     max-width: 80px;
-    opacity: 0.6;
+    opacity: 0.5;
     border-radius: var(--radius-pill);
     animation: lineGlow 2s ease-in-out infinite;
 }
 
 @keyframes lineGlow {
-    0%, 100% { opacity: 0.3; }
-    50% { opacity: 0.8; }
+    0%, 100% { opacity: 0.2; }
+    50% { opacity: 0.7; }
 }
 
 /* ==================== АНИМАЦИЯ ПОЯВЛЕНИЯ ==================== */
