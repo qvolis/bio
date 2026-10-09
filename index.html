@@ -10,26 +10,30 @@
 <body>
     <!-- ФОНОВЫЕ СЛОИ -->
     <div class="grid-bg"></div>
-    <div class="scan-lines"></div>
-    <div class="beam beam-1"></div>
-    <div class="beam beam-2"></div>
+    <div class="noise"></div>
     <div class="glow glow-1"></div>
     <div class="glow glow-2"></div>
-    <div class="corner-frame"></div>
+    <div class="glow glow-3"></div>
 
     <!-- БЕГУЩАЯ НАДПИСЬ -->
     <div class="wanted-stripe">
         <div class="wanted-track">
             <span class="wanted">В РОЗЫСКЕ ИНТЕРПОЛА</span>
+            <span class="wanted-sep">◆</span>
             <span class="wanted">В РОЗЫСКЕ ИНТЕРПОЛА</span>
+            <span class="wanted-sep">◆</span>
             <span class="wanted">В РОЗЫСКЕ ИНТЕРПОЛА</span>
+            <span class="wanted-sep">◆</span>
             <span class="wanted">В РОЗЫСКЕ ИНТЕРПОЛА</span>
+            <span class="wanted-sep">◆</span>
         </div>
     </div>
 
     <!-- СЧЁТЧИК -->
     <div class="visit-counter">
-        <span class="dot"></span>127
+        <span class="dot"></span>
+        <span>127</span>
+        <span class="counter-label">ONLINE</span>
     </div>
 
     <div class="container">
@@ -38,9 +42,13 @@
         <section class="hero">
             <div class="section-label">
                 <span class="label-line"></span>
-                <span>// ПРИВЕТ</span>
+                <span>ПРИВЕТ</span>
                 <span class="label-line"></span>
             </div>
+            <h1 class="hero-title">
+                <span class="hero-line">Привет, я</span>
+                <span class="hero-line hero-name">qvolis</span>
+            </h1>
             <p class="hero-sub">
                 Очень рад, что вы зашли на мой сайт. Занимаюсь моделированием,
                 создаю сайты и презентации.
@@ -51,21 +59,24 @@
         <section class="section">
             <div class="section-label">
                 <span class="label-line"></span>
-                <span>// ОБО МНЕ</span>
+                <span>ОБО МНЕ</span>
                 <span class="label-line"></span>
             </div>
             <div class="info-grid">
                 <div class="info-card">
+                    <span class="info-icon">01</span>
                     <span class="info-label">ВОЗРАСТ</span>
                     <span class="info-value">17 лет</span>
                 </div>
                 <div class="info-card">
+                    <span class="info-icon">02</span>
                     <span class="info-label">СТРАНА</span>
                     <span class="info-value">Беларусь</span>
                 </div>
                 <div class="info-card">
+                    <span class="info-icon">03</span>
                     <span class="info-label">ЗАНЯТИЕ</span>
-                    <span class="info-value">Моделирование и сайты</span>
+                    <span class="info-value">Моделирование</span>
                 </div>
             </div>
         </section>
@@ -74,12 +85,16 @@
         <section class="section">
             <div class="section-label">
                 <span class="label-line"></span>
-                <span>// УСЛУГИ</span>
+                <span>УСЛУГИ</span>
                 <span class="label-line"></span>
             </div>
             <a href="https://t.me/log0voas" class="order-card" target="_blank">
-                <div class="order-title">Могу сделать сайт или презентацию</div>
-                <div class="order-subtitle">Нажмите, чтобы написать в Telegram <span class="arrow">→</span></div>
+                <div class="order-icon">→</div>
+                <div class="order-content">
+                    <div class="order-title">Могу сделать сайт или презентацию</div>
+                    <div class="order-subtitle">Написать в Telegram</div>
+                </div>
+                <div class="order-arrow">↗</div>
             </a>
         </section>
 
@@ -87,21 +102,21 @@
         <section class="section">
             <div class="section-label">
                 <span class="label-line"></span>
-                <span>// КАРТЫ MINECRAFT</span>
+                <span>КАРТЫ MINECRAFT</span>
                 <span class="label-line"></span>
             </div>
             <div class="map-card">
                 <div class="map-image-wrap">
                     <img src="map1.webp" alt="Скриншот карты Лесопосадки" class="map-image">
                     <div class="image-scan"></div>
+                    <div class="map-tag">КАРТА</div>
                 </div>
                 <div class="map-body">
                     <h3>Лесопосадки</h3>
                     <p>Здесь будет ваше описание карты. Например: уютная карта с лесами и полями для выживания.</p>
                     <a href="#" class="download-btn" target="_blank">
-                        <span class="btn-line"></span>
-                        СКАЧАТЬ
-                        <span class="btn-line"></span>
+                        <span>СКАЧАТЬ</span>
+                        <span class="download-arrow">↓</span>
                     </a>
                 </div>
             </div>
@@ -111,7 +126,7 @@
         <section class="section">
             <div class="section-label">
                 <span class="label-line"></span>
-                <span>// СОЦСЕТИ</span>
+                <span>СОЦСЕТИ</span>
                 <span class="label-line"></span>
             </div>
             <div class="social-grid">
@@ -137,7 +152,9 @@
         <!-- ФУТЕР -->
         <footer class="footer">
             <span class="footer-line"></span>
-            <span>qvolis • 2026</span>
+            <span class="footer-text">qvolis</span>
+            <span class="footer-dot">•</span>
+            <span class="footer-text">2026</span>
             <span class="footer-line"></span>
         </footer>
 
