@@ -6,7 +6,6 @@
 
 :root {
     --white: #ffffff;
-    --gray-050: #f5f5f7;
     --gray-100: #e8e8ec;
     --gray-200: #c8c8cf;
     --gray-300: #9a9aa3;
@@ -124,6 +123,105 @@ body {
 @keyframes pulseSoft {
     0%, 100% { opacity: 0.3; transform: translate(-50%, -50%) scale(1); }
     50% { opacity: 0.6; transform: translate(-50%, -50%) scale(1.2); }
+}
+
+/* ==================== ВЕНЫ С ИМПУЛЬСАМИ ==================== */
+
+.veins {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+    overflow: hidden;
+}
+
+.vein {
+    position: absolute;
+    pointer-events: none;
+}
+
+/* Вертикальные вены */
+.vein-v {
+    width: 1px;
+    height: 100vh;
+    top: 0;
+    background: linear-gradient(
+        180deg,
+        transparent 0%,
+        rgba(255, 255, 255, 0.04) 20%,
+        rgba(255, 255, 255, 0.06) 50%,
+        rgba(255, 255, 255, 0.04) 80%,
+        transparent 100%
+    );
+}
+
+/* Импульс, бегущий по вертикальной вене */
+.vein-v::after {
+    content: '';
+    position: absolute;
+    left: -1px;
+    width: 3px;
+    height: 140px;
+    background: linear-gradient(
+        180deg,
+        transparent 0%,
+        rgba(255, 255, 255, 0.6) 45%,
+        rgba(255, 255, 255, 1) 50%,
+        rgba(255, 255, 255, 0.6) 55%,
+        transparent 100%
+    );
+    filter: blur(1.2px);
+    animation: pulseDown 9s linear infinite;
+    animation-delay: var(--delay, 0s);
+}
+
+@keyframes pulseDown {
+    0% { top: -140px; opacity: 0; }
+    10% { opacity: 1; }
+    90% { opacity: 1; }
+    100% { top: 100vh; opacity: 0; }
+}
+
+/* Горизонтальные вены */
+.vein-h {
+    height: 1px;
+    width: 100vw;
+    left: 0;
+    background: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(255, 255, 255, 0.04) 20%,
+        rgba(255, 255, 255, 0.06) 50%,
+        rgba(255, 255, 255, 0.04) 80%,
+        transparent 100%
+    );
+}
+
+/* Импульс, бегущий по горизонтальной вене */
+.vein-h::after {
+    content: '';
+    position: absolute;
+    top: -1px;
+    height: 3px;
+    width: 140px;
+    background: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(255, 255, 255, 0.6) 45%,
+        rgba(255, 255, 255, 1) 50%,
+        rgba(255, 255, 255, 0.6) 55%,
+        transparent 100%
+    );
+    filter: blur(1.2px);
+    animation: pulseRight 11s linear infinite;
+    animation-delay: var(--delay, 0s);
+}
+
+@keyframes pulseRight {
+    0% { left: -140px; opacity: 0; }
+    10% { opacity: 1; }
+    90% { opacity: 1; }
+    100% { left: 100vw; opacity: 0; }
 }
 
 /* ==================== БЕГУЩАЯ НАДПИСЬ ==================== */
@@ -258,17 +356,35 @@ body {
     content: '';
     position: absolute;
     top: 0;
-    left: -30%;
-    width: 30%;
     height: 100%;
+    width: 40%;
     background: var(--white);
-    animation: lineSlide 4s ease-in-out infinite;
+    opacity: 0;
 }
 
-@keyframes lineSlide {
-    0% { left: -30%; opacity: 0; }
-    50% { opacity: 1; }
+/* Левая линия — бежит слева направо */
+.label-line:first-child::after {
+    animation: lineSlideR 4.5s ease-in-out infinite;
+}
+
+/* Правая линия — бежит справа налево, с другой скоростью и задержкой */
+.label-line:last-child::after {
+    animation: lineSlideL 5.5s ease-in-out infinite;
+    animation-delay: 1.4s;
+}
+
+@keyframes lineSlideR {
+    0%   { left: -40%; opacity: 0; }
+    15%  { opacity: 1; }
+    85%  { opacity: 1; }
     100% { left: 100%; opacity: 0; }
+}
+
+@keyframes lineSlideL {
+    0%   { right: -40%; left: auto; opacity: 0; }
+    15%  { opacity: 1; }
+    85%  { opacity: 1; }
+    100% { right: 100%; left: auto; opacity: 0; }
 }
 
 /* ==================== ГЛАВНЫЙ ЭКРАН ==================== */
