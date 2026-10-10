@@ -8,25 +8,8 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
-    <!-- ФОНОВЫЕ СЛОИ -->
+    <!-- ФОН: тонкая сетка -->
     <div class="grid-bg"></div>
-    <div class="noise"></div>
-    <div class="glow glow-1"></div>
-    <div class="glow glow-2"></div>
-    <div class="glow glow-3"></div>
-
-    <!-- ВЕНЫ С ИМПУЛЬСАМИ -->
-    <div class="veins">
-        <div class="vein vein-v" style="left: 6%;  --delay: 0s;"></div>
-        <div class="vein vein-v" style="left: 18%; --delay: 2.4s;"></div>
-        <div class="vein vein-v" style="left: 32%; --delay: 1.2s;"></div>
-        <div class="vein vein-v" style="left: 68%; --delay: 3.6s;"></div>
-        <div class="vein vein-v" style="left: 82%; --delay: 0.8s;"></div>
-        <div class="vein vein-v" style="left: 94%; --delay: 2.0s;"></div>
-        <div class="vein vein-h" style="top: 22%; --delay: 1.5s;"></div>
-        <div class="vein vein-h" style="top: 55%; --delay: 4.5s;"></div>
-        <div class="vein vein-h" style="top: 82%; --delay: 3.0s;"></div>
-    </div>
 
     <!-- БЕГУЩАЯ НАДПИСЬ -->
     <div class="wanted-stripe">
@@ -44,142 +27,120 @@
 
     <!-- СЧЁТЧИК -->
     <div class="visit-counter">
-        <span class="dot"></span>
-        <span>127</span>
-        <span class="counter-label">ONLINE</span>
+        <span class="dot"></span>127
     </div>
 
     <div class="container">
 
-        <!-- ГЛАВНЫЙ ЭКРАН -->
+        <!-- HERO -->
         <section class="hero">
-            <div class="section-label">
-                <span class="label-line"></span>
-                <span>ПРИВЕТ</span>
-                <span class="label-line"></span>
-            </div>
-            <h1 class="hero-title">
-                <span class="hero-line">Привет, я</span>
-                <span class="hero-line hero-name">qvolis</span>
-            </h1>
+            <div class="section-label">ПРИВЕТ</div>
+            <h1 class="hero-title">Знакомьтесь — qvolis.<br>Ваш проводник в мир кода.</h1>
             <p class="hero-sub">
                 Очень рад, что вы зашли на мой сайт. Занимаюсь моделированием,
-                создаю сайты и презентации.
+                создаю сайты и презентации в виде HTML-кода.
             </p>
         </section>
 
-        <!-- ОБО МНЕ -->
+        <!-- ОБО МНЕ — сетка карточек -->
         <section class="section">
-            <div class="section-label">
-                <span class="label-line"></span>
-                <span>ОБО МНЕ</span>
-                <span class="label-line"></span>
-            </div>
+            <div class="section-label">ОБО МНЕ</div>
             <div class="info-grid">
-                <div class="info-card">
-                    <span class="info-icon">01</span>
-                    <span class="info-label">ВОЗРАСТ</span>
-                    <span class="info-value">17 лет</span>
+                <div class="card">
+                    <div class="card-icon">01</div>
+                    <div class="card-title">Возраст</div>
+                    <div class="card-desc">17 лет</div>
                 </div>
-                <div class="info-card">
-                    <span class="info-icon">02</span>
-                    <span class="info-label">СТРАНА ГДЕ ЖИВУТ</span>
-                    <span class="info-value">Беларусь</span>
+                <div class="card">
+                    <div class="card-icon">02</div>
+                    <div class="card-title">Страна</div>
+                    <div class="card-desc">Беларусь</div>
                 </div>
-                <div class="info-card">
-                    <span class="info-icon">03</span>
-                    <span class="info-label">ЗАНЯТИЕ</span>
-                    <span class="info-value">Я лентяй</span>
+                <div class="card">
+                    <div class="card-icon">03</div>
+                    <div class="card-title">Занятие</div>
+                    <div class="card-desc">Моделирование и сайты</div>
                 </div>
             </div>
         </section>
 
         <!-- УСЛУГИ -->
         <section class="section">
-            <div class="section-label">
-                <span class="label-line"></span>
-                <span>УСЛУГИ</span>
-                <span class="label-line"></span>
-            </div>
-            
+            <div class="section-label">УСЛУГИ</div>
             <div class="services-grid">
-                <!-- Кнопка 1: Презентация -->
-                <a href="https://t.me/log0voas" class="service-card" target="_blank">
-                    <div class="service-header">
-                        <div class="service-icon">→</div>
-                        <div class="service-price">
-                            <span class="price-value">25</span>
-                            <span class="price-star">★</span>
-                        </div>
+
+                <a href="https://t.me/qvolis_shop_bot" class="card card-service" target="_blank">
+                    <div class="card-icon">↗</div>
+                    <div class="card-title">Презентация</div>
+                    <div class="card-desc">
+                        Презентация в виде HTML-кода.<br>
+                        ⏱ Срок: 1–2 дня (по мере занятости).
                     </div>
-                    <div class="service-title">Могу сделать презентацию</div>
-                    <div class="service-subtitle">Сделать в виде HTML кода</div>
-                    <div class="service-arrow">↗</div>
+                    <div class="card-price">25 <span>★</span></div>
                 </a>
 
-                <!-- Кнопка 2: Сайт -->
-                <a href="https://t.me/log0voas" class="service-card" target="_blank">
-                    <div class="service-header">
-                        <div class="service-icon">→</div>
-                        <div class="service-price">
-                            <span class="price-value">50</span>
-                            <span class="price-star">★</span>
-                        </div>
+                <a href="https://t.me/qvolis_shop_bot" class="card card-service" target="_blank">
+                    <div class="card-icon">↗</div>
+                    <div class="card-title">Сайт</div>
+                    <div class="card-desc">
+                        Сайт в виде HTML-кода.<br>
+                        ⏱ Срок: 1–2 дня (по мере занятости).
                     </div>
-                    <div class="service-title">Могу сделать сайт</div>
-                    <div class="service-subtitle">Сделать в виде HTML кода</div>
-                    <div class="service-arrow">↗</div>
+                    <div class="card-price">50 <span>★</span></div>
                 </a>
+
+                <a href="https://t.me/qvolis_shop_bot" class="card card-service card-accent" target="_blank">
+                    <div class="card-icon">⚡</div>
+                    <div class="card-title">Супер-быстрая</div>
+                    <div class="card-desc">
+                        Экспресс-презентация в HTML.<br>
+                        🚀 Срок: с 16:00 до 22:00 в тот же день.
+                    </div>
+                    <div class="card-price">70 <span>★</span></div>
+                </a>
+
             </div>
         </section>
 
         <!-- КАРТЫ MINECRAFT -->
         <section class="section">
-            <div class="section-label">
-                <span class="label-line"></span>
-                <span>КАРТЫ MINECRAFT</span>
-                <span class="label-line"></span>
-            </div>
-            <div class="map-card">
-                <div class="map-image-wrap">
-                    <img src="map1.webp" alt="Скриншот карты Лесопосадки" class="map-image">
-                    <div class="image-scan"></div>
-                    <div class="map-tag">КАРТА</div>
-                </div>
-                <div class="map-body">
-                    <h3>Лесопосадки</h3>
-                    <p>Здесь будет ваше описание карты. Например: уютная карта с лесами и полями для выживания.</p>
-                    <a href="#" class="download-btn" target="_blank">
-                        <span>СКАЧАТЬ</span>
-                        <span class="download-arrow">↓</span>
-                    </a>
+            <div class="section-label">КАРТЫ MINECRAFT</div>
+            <div class="map-wrapper">
+                <div class="map-connector"></div>
+                <div class="map-card">
+                    <div class="map-image-wrap">
+                        <img src="map1.webp" alt="Скриншот карты Лесопосадки" class="map-image">
+                        <div class="map-tag">Minecraft</div>
+                    </div>
+                    <div class="map-body">
+                        <div class="map-icon">🗺</div>
+                        <div class="map-title">Лесопосадки</div>
+                        <div class="map-desc">Уютная карта с лесами и полями для выживания. Скачайте бесплатно.</div>
+                        <a href="#" class="download-btn" target="_blank">Скачать</a>
+                    </div>
                 </div>
             </div>
         </section>
 
         <!-- СОЦСЕТИ -->
         <section class="section">
-            <div class="section-label">
-                <span class="label-line"></span>
-                <span>СОЦСЕТИ</span>
-                <span class="label-line"></span>
-            </div>
+            <div class="section-label">СОЦСЕТИ</div>
             <div class="social-grid">
-                <a href="https://t.me/log0voas" class="social-card" target="_blank">
-                    <span class="social-name">Telegram</span>
-                    <span class="social-arrow">↗</span>
+                <a href="https://t.me/log0voas" class="card card-social" target="_blank">
+                    <div class="card-icon">↗</div>
+                    <div class="card-title">Telegram</div>
                 </a>
-                <a href="https://discord.gg/s5s2uu9j" class="social-card" target="_blank">
-                    <span class="social-name">Discord</span>
-                    <span class="social-arrow">↗</span>
+                <a href="https://discord.gg/s5s2uu9j" class="card card-social" target="_blank">
+                    <div class="card-icon">↗</div>
+                    <div class="card-title">Discord</div>
                 </a>
-                <a href="https://www.tiktok.com/@zhanitas?_r=1&_t=ZP-9A3Y2t6bqta" class="social-card" target="_blank">
-                    <span class="social-name">TikTok</span>
-                    <span class="social-arrow">↗</span>
+                <a href="https://www.tiktok.com/@zhanitas" class="card card-social" target="_blank">
+                    <div class="card-icon">↗</div>
+                    <div class="card-title">TikTok</div>
                 </a>
-                <a href="https://open.spotify.com/user/31n6vi5csy6qyvwcrvzqtqoil5ge?si=YVboFvieSAmZfcFbPXDnzA&utm_source=copy-link" class="social-card" target="_blank">
-                    <span class="social-name">Spotify</span>
-                    <span class="social-arrow">↗</span>
+                <a href="https://open.spotify.com/user/31n6vi5csy6qyvwcrvzqtqoil5ge" class="card card-social" target="_blank">
+                    <div class="card-icon">↗</div>
+                    <div class="card-title">Spotify</div>
                 </a>
             </div>
         </section>
@@ -187,9 +148,7 @@
         <!-- ФУТЕР -->
         <footer class="footer">
             <span class="footer-line"></span>
-            <span class="footer-text">qvolis</span>
-            <span class="footer-dot">•</span>
-            <span class="footer-text">2026</span>
+            <span>qvolis • 2026</span>
             <span class="footer-line"></span>
         </footer>
 
