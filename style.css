@@ -1050,3 +1050,50 @@ body {
         grid-template-columns: 1fr 1fr;
     }
 }
+/* ==================== СУПЕР-БЫСТРАЯ КАРТОЧКА ==================== */
+
+/* На широких экранах — растягиваем на 2 колонки */
+@media (min-width: 540px) {
+    .service-card-fast {
+        grid-column: 1 / -1;
+    }
+}
+
+/* Выделение — чуть светлее фон и акцентная граница */
+.service-card-fast {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.03));
+    border-color: rgba(255, 255, 255, 0.2);
+    position: relative;
+}
+
+.service-card-fast::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--white), transparent);
+    opacity: 0.6;
+    animation: topSweep 3s linear infinite;
+}
+
+.service-card-fast:hover {
+    border-color: var(--white);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.15);
+}
+
+.service-card-fast .service-icon {
+    background: var(--white);
+    color: var(--black);
+}
+
+.service-card-fast .price-value {
+    color: var(--white);
+    text-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+}
+
+.service-card-fast .service-subtitle {
+    color: var(--gray-200);
+    text-transform: none;
+    letter-spacing: 0.5px;
+    font-size: 13px;
+}
