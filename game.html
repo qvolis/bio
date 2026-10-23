@@ -3,32 +3,273 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Моя игра</title>
+    <title>Рулетка Оценок</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        :root { --bg: #050507; --border: rgba(255, 255, 255, 0.08); --white: #ffffff; --gray: #9a9aa3; }
+        :root {
+            --bg: #050507;
+            --glass: rgba(255, 255, 255, 0.04);
+            --border: rgba(255, 255, 255, 0.08);
+            --border-hover: rgba(255, 255, 255, 0.22);
+            --white: #ffffff;
+            --gray-300: #9a9aa3;
+            --gray-400: #6b6b73;
+            --mono: 'JetBrains Mono', 'Courier New', monospace;
+        }
+
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: var(--bg); color: var(--white); height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 20px; overflow: hidden; }
-        .box { border: 1px solid var(--border); background: rgba(255, 255, 255, 0.02); padding: 40px 20px; border-radius: 16px; width: 100%; max-width: 350px; }
-        h1 { font-size: 24px; margin-bottom: 15px; font-weight: 700; }
-        p { color: var(--gray); font-size: 14px; line-height: 1.5; margin-bottom: 20px; }
-        .icon { font-size: 50px; margin-bottom: 20px; animation: float 3s ease-in-out infinite; }
-        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
-        .btn { background: var(--white); color: var(--bg); border: none; padding: 15px 30px; border-radius: 10px; font-weight: 700; font-size: 16px; cursor: pointer; width: 100%; transition: transform 0.1s; }
-        .btn:active { transform: scale(0.95); }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg);
+            color: var(--white);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            overflow: hidden;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 400px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* Заголовок */
+        .header {
+            text-align: center;
+            font-family: var(--mono);
+            font-size: 11px;
+            letter-spacing: 3px;
+            color: var(--gray-300);
+            text-transform: uppercase;
+        }
+
+        /* Блок с оценкой */
+        .grade-container {
+            background: var(--glass);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 40px 20px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .subject-label {
+            font-size: 14px;
+            color: var(--gray-400);
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-family: var(--mono);
+        }
+
+        .grade-display {
+            font-family: var(--mono);
+            font-size: 90px;
+            font-weight: 800;
+            line-height: 1;
+            color: var(--white);
+            text-shadow: 0 0 30px rgba(255, 255, 255, 0.2);
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+
+        /* Анимация кручения */
+        .grade-display.spinning {
+            color: var(--gray-400);
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+            animation: shake 0.1s linear infinite;
+        }
+
+        @keyframes shake {
+            0% { transform: translateY(0); }
+            25% { transform: translateY(-5px); }
+            50% { transform: translateY(0); }
+            75% { transform: translateY(5px); }
+            100% { transform: translateY(0); }
+        }
+
+        /* Кнопка Крутить */
+        .spin-btn {
+            background: var(--white);
+            color: var(--bg);
+            border: none;
+            padding: 18px;
+            border-radius: 12px;
+            font-family: var(--mono);
+            font-size: 16px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+        }
+
+        .spin-btn:active {
+            transform: scale(0.95);
+        }
+
+        .spin-btn:disabled {
+            background: var(--gray-400);
+            cursor: not-allowed;
+        }
+
+        /* Выбор предмета */
+        .subjects-title {
+            font-family: var(--mono);
+            font-size: 10px;
+            letter-spacing: 2px;
+            color: var(--gray-400);
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .subjects-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .subject-btn {
+            background: var(--glass);
+            border: 1px solid var(--border);
+            color: var(--gray-300);
+            padding: 15px 10px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .subject-btn:hover {
+            border-color: var(--border-hover);
+            color: var(--white);
+        }
+
+        .subject-btn.active {
+            background: var(--white);
+            color: var(--bg);
+            border-color: var(--white);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+        }
     </style>
 </head>
 <body>
-    <div class="box">
-        <div class="icon">🎮</div>
-        <h1>Игра скоро появится</h1>
-        <p>Здесь будет интерфейс игры. Напиши правила, и мы добавим логику!</p>
-        <button class="btn" onclick="Telegram.WebApp.close()">Закрыть</button>
+
+    <div class="app-container">
+        <div class="header">// РУЛЕТКА ОЦЕНОК</div>
+
+        <!-- Экран с оценкой -->
+        <div class="grade-container">
+            <div class="subject-label" id="current-subject">Анатомия</div>
+            <div class="grade-display" id="grade-display">?</div>
+        </div>
+
+        <!-- Кнопка запуска -->
+        <button class="spin-btn" id="spin-btn">КРУТИТЬ</button>
+
+        <!-- Выбор предмета -->
+        <div>
+            <div class="subjects-title">Выберите предмет</div>
+            <div class="subjects-grid" id="subjects-grid">
+                <!-- Кнопки добавятся через JS -->
+            </div>
+        </div>
     </div>
+
     <script>
-        let tg = window.Telegram.WebApp;
+        // Инициализация Telegram
+        const tg = window.Telegram.WebApp;
         tg.expand();
         tg.ready();
+
+        // Список предметов (можешь поменять на свои)
+        const subjects = ["Анатомия", "Фармакология", "Физиология", "Хирургия", "Терапия", "Педиатрия"];
+        let selectedSubject = subjects[0];
+        let isSpinning = false;
+
+        const grid = document.getElementById('subjects-grid');
+        const currentSubjectLabel = document.getElementById('current-subject');
+        const display = document.getElementById('grade-display');
+        const spinBtn = document.getElementById('spin-btn');
+
+        // Создаем кнопки предметов
+        subjects.forEach((sub, index) => {
+            const btn = document.createElement('button');
+            btn.className = 'subject-btn' + (index === 0 ? ' active' : '');
+            btn.textContent = sub;
+            btn.onclick = () => {
+                if (isSpinning) return; // Нельзя менять предмет во время кручения
+                selectedSubject = sub;
+                currentSubjectLabel.textContent = sub;
+                
+                // Снимаем выделение со всех и ставим на нажатую
+                document.querySelectorAll('.subject-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                
+                // Сбрасываем оценку при смене предмета
+                display.textContent = '?';
+                display.style.color = 'var(--white)';
+                display.style.textShadow = '0 0 30px rgba(255, 255, 255, 0.2)';
+            };
+            grid.appendChild(btn);
+        });
+
+        // Логика рулетки
+        spinBtn.onclick = () => {
+            if (isSpinning) return;
+            isSpinning = true;
+            spinBtn.textContent = 'КРУТИМ...';
+            spinBtn.disabled = true;
+            display.classList.add('spinning');
+            display.style.color = '';
+
+            let count = 0;
+            const totalSpins = 30; // Количество "прокруток" перед остановкой
+
+            const interval = setInterval(() => {
+                // Показываем случайное число от 1 до 10
+                display.textContent = Math.floor(Math.random() * 10) + 1;
+                count++;
+
+                if (count >= totalSpins) {
+                    clearInterval(interval);
+                    
+                    // Финальный результат
+                    const finalGrade = Math.floor(Math.random() * 10) + 1;
+                    display.textContent = finalGrade;
+                    display.classList.remove('spinning');
+                    
+                    // Красим оценку в зависимости от результата
+                    if (finalGrade >= 8) {
+                        display.style.color = '#ffffff';
+                        display.style.textShadow = '0 0 40px rgba(255, 255, 255, 0.8)';
+                    } else if (finalGrade <= 3) {
+                        display.style.color = '#ff4444'; // Красный для плохих оценок
+                        display.style.textShadow = '0 0 30px rgba(255, 68, 68, 0.5)';
+                    } else {
+                        display.style.color = '#9a9aa3'; // Серый для средних
+                        display.style.textShadow = 'none';
+                    }
+
+                    isSpinning = false;
+                    spinBtn.textContent = 'КРУТИТЬ ЕЩЕ РАЗ';
+                    spinBtn.disabled = false;
+                }
+            }, 50); // Скорость смены цифр (каждые 50 миллисекунд)
+        };
     </script>
 </body>
 </html>
