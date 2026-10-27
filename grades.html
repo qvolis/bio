@@ -8,9 +8,10 @@
     <style>
         :root {
             --bg: #050507;
-            --glass: rgba(255, 255, 255, 0.04);
+            --glass: rgba(255, 255, 255, 0.03);
+            --glass-hover: rgba(255, 255, 255, 0.06);
             --border: rgba(255, 255, 255, 0.08);
-            --border-hover: rgba(255, 255, 255, 0.22);
+            --border-hover: rgba(255, 255, 255, 0.25);
             --white: #ffffff;
             --gray-300: #9a9aa3;
             --gray-400: #6b6b73;
@@ -28,56 +29,149 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            /* Красивый фон */
+            background-image: radial-gradient(circle at 50% 0%, rgba(255,255,255,0.03) 0%, transparent 70%);
         }
 
         .app-container {
             width: 100%;
-            max-width: 400px;
+            max-width: 450px;
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 20px;
         }
 
         .header {
             text-align: center;
             font-family: var(--mono);
             font-size: 11px;
-            letter-spacing: 3px;
-            color: var(--gray-300);
+            letter-spacing: 4px;
+            color: var(--gray-400);
             text-transform: uppercase;
             margin-top: 10px;
+        }
+
+        /* ==================== ПАНЕЛЬ ИТОГОВ (СВЕРХУ) ==================== */
+        .dashboard {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.01));
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 25px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+        }
+
+        /* Свечение на фоне панели */
+        .dashboard::before {
+            content: '';
+            position: absolute;
+            top: -50px; left: -50px;
+            width: 150px; height: 150px;
+            background: rgba(255, 255, 255, 0.05);
+            filter: blur(50px);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .overall-score-container {
+            text-align: center;
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .overall-label {
+            font-family: var(--mono);
+            font-size: 10px;
+            letter-spacing: 2px;
+            color: var(--gray-300);
+            text-transform: uppercase;
             margin-bottom: 10px;
         }
 
-        /* Карточка предмета */
+        .overall-score {
+            font-family: var(--mono);
+            font-size: 54px;
+            font-weight: 800;
+            line-height: 1;
+            transition: color 0.4s, text-shadow 0.4s;
+        }
+
+        .summary-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+            padding: 4px 0;
+        }
+
+        .summary-subject {
+            color: var(--gray-300);
+            flex: 1;
+            padding-right: 15px;
+            line-height: 1.3;
+        }
+
+        .summary-grade {
+            font-family: var(--mono);
+            font-size: 15px;
+            font-weight: 700;
+            transition: color 0.3s;
+        }
+
+        /* ==================== КАРТОЧКИ ПРЕДМЕТОВ ==================== */
+        .subjects-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
         .subject-card {
             background: var(--glass);
             border: 1px solid var(--border);
             border-radius: 16px;
             padding: 20px;
-            transition: border-color 0.3s;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         .subject-card:hover {
             border-color: var(--border-hover);
+            background: var(--glass-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
 
         .subject-header {
             display: flex;
             justify-content: space-between;
-            align-items: center;
+            align-items: flex-start;
             margin-bottom: 15px;
+            gap: 15px;
         }
 
         .subject-name {
-            font-size: 16px;
+            font-size: 15px;
             font-weight: 700;
+            line-height: 1.3;
+            color: var(--white);
         }
 
-        .average-score {
+        .subject-avg {
             font-family: var(--mono);
-            font-size: 18px;
+            font-size: 16px;
             font-weight: 800;
+            flex-shrink: 0;
+            background: rgba(255,255,255,0.05);
+            padding: 4px 10px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
             transition: color 0.3s;
         }
 
@@ -87,103 +181,101 @@
             flex-wrap: wrap;
             gap: 8px;
             margin-bottom: 15px;
-            min-height: 30px;
+            min-height: 28px;
         }
 
         .grade-badge {
-            background: rgba(255,255,255,0.1);
-            padding: 4px 10px;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 4px 12px;
             border-radius: 6px;
             font-family: var(--mono);
             font-size: 14px;
             font-weight: 600;
             cursor: pointer;
-            transition: background 0.2s;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .grade-badge::after {
+            content: '×';
+            font-size: 12px;
+            color: var(--gray-400);
+            opacity: 0;
+            transition: opacity 0.2s;
         }
 
         .grade-badge:hover {
-            background: rgba(255, 50, 50, 0.3);
+            background: rgba(255, 50, 50, 0.2);
+            border-color: rgba(255, 50, 50, 0.5);
+            color: #ff6b6b;
+        }
+
+        .grade-badge:hover::after {
+            opacity: 1;
+            color: #ff6b6b;
         }
 
         /* Добавление оценки */
         .add-grade-row {
             display: flex;
             gap: 10px;
+            position: relative;
         }
 
         .grade-input {
             flex: 1;
-            background: rgba(0,0,0,0.3);
+            background: rgba(0,0,0,0.4);
             border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 10px 15px;
+            border-radius: 10px;
+            padding: 12px 16px;
             color: var(--white);
             font-family: var(--mono);
             font-size: 16px;
             outline: none;
-            transition: border-color 0.3s;
+            transition: all 0.3s;
         }
 
         .grade-input:focus {
             border-color: var(--white);
+            background: rgba(0,0,0,0.6);
+            box-shadow: 0 0 15px rgba(255,255,255,0.1);
+        }
+
+        .grade-input::placeholder {
+            color: var(--gray-400);
+        }
+
+        /* Убираем стрелочки у input type=number */
+        .grade-input::-webkit-outer-spin-button,
+        .grade-input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
         }
 
         .add-btn {
             background: var(--white);
             color: var(--bg);
             border: none;
-            border-radius: 8px;
+            border-radius: 10px;
             padding: 0 20px;
-            font-weight: 700;
-            font-size: 20px;
+            font-weight: 800;
+            font-size: 22px;
             cursor: pointer;
-            transition: transform 0.1s;
+            transition: transform 0.1s, background 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .add-btn:active {
             transform: scale(0.9);
         }
 
-        /* Итоговая плашка */
-        .summary-box {
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02));
-            border: 1px solid var(--border-hover);
-            border-radius: 16px;
-            padding: 20px;
-            margin-top: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        }
-
-        .summary-title {
-            font-family: var(--mono);
-            font-size: 10px;
-            letter-spacing: 2px;
-            color: var(--gray-400);
-            text-transform: uppercase;
-            margin-bottom: 15px;
-            text-align: center;
-        }
-
-        .summary-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px 0;
-            border-bottom: 1px solid var(--border);
-            font-size: 14px;
-        }
-
-        .summary-row:last-child {
-            border-bottom: none;
-        }
-
-        .summary-subject {
-            color: var(--gray-300);
-        }
-
-        .summary-grade {
-            font-family: var(--mono);
-            font-weight: 700;
-            transition: color 0.3s;
+        .add-btn:hover {
+            background: #e0e0e0;
         }
 
         /* Кнопка закрытия */
@@ -191,20 +283,23 @@
             background: transparent;
             color: var(--gray-400);
             border: 1px solid var(--border);
-            padding: 15px;
+            padding: 18px;
             border-radius: 12px;
             font-family: var(--mono);
             font-size: 12px;
+            font-weight: 700;
             letter-spacing: 2px;
             text-transform: uppercase;
             cursor: pointer;
-            margin-top: 20px;
+            margin-top: 10px;
+            margin-bottom: 40px;
             transition: all 0.3s;
         }
 
         .close-btn:hover {
             border-color: var(--white);
             color: var(--white);
+            background: rgba(255,255,255,0.05);
         }
     </style>
 </head>
@@ -213,16 +308,20 @@
     <div class="app-container">
         <div class="header">// ЖУРНАЛ ОЦЕНОК</div>
 
-        <div id="subjects-container">
-            <!-- Карточки предметов будут здесь -->
+        <!-- ПАНЕЛЬ ИТОГОВ (СВЕРХУ) -->
+        <div class="dashboard">
+            <div class="overall-score-container">
+                <div class="overall-label">ОБЩИЙ СРЕДНИЙ БАЛЛ</div>
+                <div class="overall-score" id="overall-score">—</div>
+            </div>
+            <div class="summary-list" id="summary-list">
+                <!-- Строки с предметами и их средним баллом -->
+            </div>
         </div>
 
-        <!-- Итоговый блок -->
-        <div class="summary-box">
-            <div class="summary-title">Средний балл</div>
-            <div id="summary-list">
-                <!-- Строки итогов будут здесь -->
-            </div>
+        <!-- СПИСОК ПРЕДМЕТОВ -->
+        <div class="subjects-container" id="subjects-container">
+            <!-- Карточки предметов будут здесь -->
         </div>
 
         <button class="close-btn" onclick="Telegram.WebApp.close()">ЗАКРЫТЬ</button>
@@ -233,24 +332,36 @@
         tg.expand();
         tg.ready();
 
-        // Предметы по умолчанию
-        const defaultSubjects = ["Анатомия", "Фармакология", "Латинский язык"];
+        // --- СПИСОК ПРЕДМЕТОВ ---
+        const defaultSubjects = [
+            "Медицинская генетика",
+            "Латинский язык",
+            "Защита населения и территории от ЧС",
+            "Гигиена и Экология человека",
+            "СД и МТ",
+            "Анатомия",
+            "Физкультура",
+            "Фармакология",
+            "Основы права",
+            "История медицины",
+            "Гигиена"
+        ];
         
-        // Загружаем данные из памяти или создаем новые
+        // Загружаем данные
         let gradesData = JSON.parse(localStorage.getItem('qvolis_grades')) || {};
         
-        // Если данных нет, инициализируем
-        if (Object.keys(gradesData).length === 0) {
-            defaultSubjects.forEach(sub => gradesData[sub] = []);
-        }
+        // Добавляем новые предметы, сохраняя старые оценки
+        defaultSubjects.forEach(sub => {
+            if (!gradesData[sub]) gradesData[sub] = [];
+        });
 
         const container = document.getElementById('subjects-container');
         const summaryList = document.getElementById('summary-list');
+        const overallScoreElement = document.getElementById('overall-score');
 
-        // Функция для получения цвета от красного к зеленому
+        // Функция цвета (от красного к зеленому)
         function getColorForGrade(avg) {
             if (avg === 0) return 'var(--gray-400)';
-            // Преобразуем оценку (1-10) в оттенок (0 - красный, 120 - зеленый)
             const hue = (avg / 10) * 120; 
             return `hsl(${hue}, 80%, 60%)`;
         }
@@ -260,41 +371,47 @@
             container.innerHTML = '';
             summaryList.innerHTML = '';
 
+            let totalSum = 0;
+            let totalCount = 0;
+
+            // Проходимся по всем предметам
             for (const subject in gradesData) {
                 const grades = gradesData[subject];
                 
-                // Считаем среднее
+                // Считаем среднее для предмета
                 let avg = 0;
                 if (grades.length > 0) {
                     const sum = grades.reduce((a, b) => a + b, 0);
                     avg = sum / grades.length;
+                    totalSum += sum;
+                    totalCount += grades.length;
                 }
 
-                // --- 1. Карточка предмета ---
+                // 1. КАРТОЧКА ПРЕДМЕТА
                 const card = document.createElement('div');
                 card.className = 'subject-card';
                 
-                // Формируем бейджи с оценками
+                // Бейджи с оценками (при клике удаляются)
                 let gradesHtml = grades.map((g, index) => 
-                    `<div class="grade-badge" onclick="removeGrade('${subject}', ${index})" title="Нажмите, чтобы удалить">${g}</div>`
+                    `<div class="grade-badge" onclick="removeGrade('${subject}', ${index})" title="Удалить оценку">${g}</div>`
                 ).join('');
 
                 card.innerHTML = `
                     <div class="subject-header">
                         <div class="subject-name">${subject}</div>
-                        <div class="average-score" style="color: ${getColorForGrade(avg)}">
+                        <div class="subject-avg" style="color: ${getColorForGrade(avg)}">
                             ${avg > 0 ? avg.toFixed(2) : '—'}
                         </div>
                     </div>
                     <div class="grades-list">${gradesHtml || '<span style="color:var(--gray-400); font-size:12px;">Нет оценок</span>'}</div>
                     <div class="add-grade-row">
-                        <input type="number" class="grade-input" id="input-${subject}" placeholder="Оценка (1-10)" min="1" max="10">
+                        <input type="number" class="grade-input" id="input-${subject}" placeholder="Оценка (1-10)" min="1" max="10" step="0.1">
                         <button class="add-btn" onclick="addGrade('${subject}')">+</button>
                     </div>
                 `;
                 container.appendChild(card);
 
-                // --- 2. Строка в итоговом блоке ---
+                // 2. СТРОКА В ПАНЕЛИ СВЕРХУ
                 const summaryRow = document.createElement('div');
                 summaryRow.className = 'summary-row';
                 summaryRow.innerHTML = `
@@ -305,7 +422,7 @@
                 `;
                 summaryList.appendChild(summaryRow);
 
-                // Добавляем обработку нажатия Enter в поле ввода
+                // Enter для ввода
                 setTimeout(() => {
                     const input = document.getElementById(`input-${subject}`);
                     if(input) {
@@ -316,7 +433,19 @@
                 }, 0);
             }
 
-            // Сохраняем в память
+            // 3. ОБЩИЙ СРЕДНИЙ БАЛЛ
+            if (totalCount > 0) {
+                const overallAvg = totalSum / totalCount;
+                overallScoreElement.textContent = overallAvg.toFixed(2);
+                overallScoreElement.style.color = getColorForGrade(overallAvg);
+                overallScoreElement.style.textShadow = `0 0 30px ${getColorForGrade(overallAvg)}`;
+            } else {
+                overallScoreElement.textContent = '—';
+                overallScoreElement.style.color = 'var(--gray-400)';
+                overallScoreElement.style.textShadow = 'none';
+            }
+
+            // Сохраняем
             localStorage.setItem('qvolis_grades', JSON.stringify(gradesData));
         }
 
@@ -327,22 +456,26 @@
 
             if (value >= 1 && value <= 10) {
                 gradesData[subject].push(value);
-                input.value = ''; // Очищаем поле
-                render(); // Перерисовываем
+                input.value = '';
+                render();
             } else {
                 input.value = '';
                 input.placeholder = 'От 1 до 10!';
-                setTimeout(() => input.placeholder = 'Оценка (1-10)', 1500);
+                input.style.borderColor = '#ff4444';
+                setTimeout(() => {
+                    input.placeholder = 'Оценка (1-10)';
+                    input.style.borderColor = 'var(--border)';
+                }, 1500);
             }
         }
 
-        // Удаление оценки (если нажать на бейдж)
+        // Удаление оценки
         function removeGrade(subject, index) {
             gradesData[subject].splice(index, 1);
             render();
         }
 
-        // Первый запуск
+        // Запуск
         render();
     </script>
 </body>
