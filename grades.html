@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Журнал Оценок</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        :root {
+            --bg: #050507;
+            --glass: rgba(255, 255, 255, 0.04);
+            --border: rgba(255, 255, 255, 0.08);
+            --border-hover: rgba(255, 255, 255, 0.22);
+            --white: #ffffff;
+            --gray-300: #9a9aa3;
+            --gray-400: #6b6b73;
+            --mono: 'JetBrains Mono', 'Courier New', monospace;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg);
+            color: var(--white);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 400px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .header {
+            text-align: center;
+            font-family: var(--mono);
+            font-size: 11px;
+            letter-spacing: 3px;
+            color: var(--gray-300);
+            text-transform: uppercase;
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
+
+        /* Карточка предмета */
+        .subject-card {
+            background: var(--glass);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 20px;
+            transition: border-color 0.3s;
+        }
+
+        .subject-card:hover {
+            border-color: var(--border-hover);
+        }
+
+        .subject-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .subject-name {
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .average-score {
+            font-family: var(--mono);
+            font-size: 18px;
+            font-weight: 800;
+            transition: color 0.3s;
+        }
+
+        /* Список оценок */
+        .grades-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 15px;
+            min-height: 30px;
+        }
+
+        .grade-badge {
+            background: rgba(255,255,255,0.1);
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-family: var(--mono);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .grade-badge:hover {
+            background: rgba(255, 50, 50, 0.3);
+        }
+
+        /* Добавление оценки */
+        .add-grade-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .grade-input {
+            flex: 1;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px 15px;
+            color: var(--white);
+            font-family: var(--mono);
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .grade-input:focus {
+            border-color: var(--white);
+        }
+
+        .add-btn {
+            background: var(--white);
+            color: var(--bg);
+            border: none;
+            border-radius: 8px;
+            padding: 0 20px;
+            font-weight: 700;
+            font-size: 20px;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+
+        .add-btn:active {
+            transform: scale(0.9);
+        }
+
+        /* Итоговая плашка */
+        .summary-box {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02));
+            border: 1px solid var(--border-hover);
+            border-radius: 16px;
+            padding: 20px;
+            margin-top: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .summary-title {
+            font-family: var(--mono);
+            font-size: 10px;
+            letter-spacing: 2px;
+            color: var(--gray-400);
+            text-transform: uppercase;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 14px;
+        }
+
+        .summary-row:last-child {
+            border-bottom: none;
+        }
+
+        .summary-subject {
+            color: var(--gray-300);
+        }
+
+        .summary-grade {
+            font-family: var(--mono);
+            font-weight: 700;
+            transition: color 0.3s;
+        }
+
+        /* Кнопка закрытия */
+        .close-btn {
+            background: transparent;
+            color: var(--gray-400);
+            border: 1px solid var(--border);
+            padding: 15px;
+            border-radius: 12px;
+            font-family: var(--mono);
+            font-size: 12px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s;
+        }
+
+        .close-btn:hover {
+            border-color: var(--white);
+            color: var(--white);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <div class="header">// ЖУРНАЛ ОЦЕНОК</div>
+
+        <div id="subjects-container">
+            <!-- Карточки предметов будут здесь -->
+        </div>
+
+        <!-- Итоговый блок -->
+        <div class="summary-box">
+            <div class="summary-title">Средний балл</div>
+            <div id="summary-list">
+                <!-- Строки итогов будут здесь -->
+            </div>
+        </div>
+
+        <button class="close-btn" onclick="Telegram.WebApp.close()">ЗАКРЫТЬ</button>
+    </div>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+        tg.ready();
+
+        // Предметы по умолчанию
+        const defaultSubjects = ["Анатомия", "Фармакология", "Латинский язык"];
+        
+        // Загружаем данные из памяти или создаем новые
+        let gradesData = JSON.parse(localStorage.getItem('qvolis_grades')) || {};
+        
+        // Если данных нет, инициализируем
+        if (Object.keys(gradesData).length === 0) {
+            defaultSubjects.forEach(sub => gradesData[sub] = []);
+        }
+
+        const container = document.getElementById('subjects-container');
+        const summaryList = document.getElementById('summary-list');
+
+        // Функция для получения цвета от красного к зеленому
+        function getColorForGrade(avg) {
+            if (avg === 0) return 'var(--gray-400)';
+            // Преобразуем оценку (1-10) в оттенок (0 - красный, 120 - зеленый)
+            const hue = (avg / 10) * 120; 
+            return `hsl(${hue}, 80%, 60%)`;
+        }
+
+        // Отрисовка интерфейса
+        function render() {
+            container.innerHTML = '';
+            summaryList.innerHTML = '';
+
+            for (const subject in gradesData) {
+                const grades = gradesData[subject];
+                
+                // Считаем среднее
+                let avg = 0;
+                if (grades.length > 0) {
+                    const sum = grades.reduce((a, b) => a + b, 0);
+                    avg = sum / grades.length;
+                }
+
+                // --- 1. Карточка предмета ---
+                const card = document.createElement('div');
+                card.className = 'subject-card';
+                
+                // Формируем бейджи с оценками
+                let gradesHtml = grades.map((g, index) => 
+                    `<div class="grade-badge" onclick="removeGrade('${subject}', ${index})" title="Нажмите, чтобы удалить">${g}</div>`
+                ).join('');
+
+                card.innerHTML = `
+                    <div class="subject-header">
+                        <div class="subject-name">${subject}</div>
+                        <div class="average-score" style="color: ${getColorForGrade(avg)}">
+                            ${avg > 0 ? avg.toFixed(2) : '—'}
+                        </div>
+                    </div>
+                    <div class="grades-list">${gradesHtml || '<span style="color:var(--gray-400); font-size:12px;">Нет оценок</span>'}</div>
+                    <div class="add-grade-row">
+                        <input type="number" class="grade-input" id="input-${subject}" placeholder="Оценка (1-10)" min="1" max="10">
+                        <button class="add-btn" onclick="addGrade('${subject}')">+</button>
+                    </div>
+                `;
+                container.appendChild(card);
+
+                // --- 2. Строка в итоговом блоке ---
+                const summaryRow = document.createElement('div');
+                summaryRow.className = 'summary-row';
+                summaryRow.innerHTML = `
+                    <span class="summary-subject">${subject}</span>
+                    <span class="summary-grade" style="color: ${getColorForGrade(avg)}">
+                        ${avg > 0 ? avg.toFixed(2) : '—'}
+                    </span>
+                `;
+                summaryList.appendChild(summaryRow);
+
+                // Добавляем обработку нажатия Enter в поле ввода
+                setTimeout(() => {
+                    const input = document.getElementById(`input-${subject}`);
+                    if(input) {
+                        input.addEventListener('keypress', function (e) {
+                            if (e.key === 'Enter') addGrade(subject);
+                        });
+                    }
+                }, 0);
+            }
+
+            // Сохраняем в память
+            localStorage.setItem('qvolis_grades', JSON.stringify(gradesData));
+        }
+
+        // Добавление оценки
+        function addGrade(subject) {
+            const input = document.getElementById(`input-${subject}`);
+            const value = parseFloat(input.value);
+
+            if (value >= 1 && value <= 10) {
+                gradesData[subject].push(value);
+                input.value = ''; // Очищаем поле
+                render(); // Перерисовываем
+            } else {
+                input.value = '';
+                input.placeholder = 'От 1 до 10!';
+                setTimeout(() => input.placeholder = 'Оценка (1-10)', 1500);
+            }
+        }
+
+        // Удаление оценки (если нажать на бейдж)
+        function removeGrade(subject, index) {
+            gradesData[subject].splice(index, 1);
+            render();
+        }
+
+        // Первый запуск
+        render();
+    </script>
+</body>
+</html>
