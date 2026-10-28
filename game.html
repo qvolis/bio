@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Wall Kicker</title>
+    <title>Platform Jumper</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -14,7 +14,7 @@
             height: 100%;
             width: 100%;
             overflow: hidden;
-            touch-action: none; /* Отключаем скролл */
+            touch-action: none;
             user-select: none;
             position: relative;
         }
@@ -25,7 +25,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            z-index: 1; /* Холст под кнопками */
+            z-index: 1;
         }
         .overlay {
             position: absolute;
@@ -38,7 +38,7 @@
             align-items: center;
             justify-content: center;
             text-align: center;
-            z-index: 10; /* Кнопки поверх холста */
+            z-index: 10;
             transition: opacity 0.3s;
         }
         .overlay.hidden {
@@ -73,9 +73,7 @@
             z-index: 11;
             box-shadow: 0 4px 15px rgba(255, 255, 255, 0.2);
         }
-        .btn:active {
-            transform: scale(0.95);
-        }
+        .btn:active { transform: scale(0.95); }
         .score-display {
             font-family: 'Courier New', monospace;
             font-size: 64px;
@@ -91,8 +89,8 @@
 
     <!-- Экран старта -->
     <div class="overlay" id="start-screen">
-        <div class="title">WALL KICKER</div>
-        <div class="subtitle">// ТАПНИ, ЧТОБЫ ПРЫГНУТЬ</div>
+        <div class="title">PLATFORM JUMPER</div>
+        <div class="subtitle">// ТАПАЙ, ЧТОБЫ ПРЫГАТЬ</div>
         <button class="btn" id="startBtn">СТАРТ</button>
     </div>
 
@@ -112,132 +110,126 @@
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         
-        // Исправление размеров под экран телефона (Telegram WebApp)
         let width, height;
         function resize() {
             width = window.innerWidth;
-            // tg.viewportHeight дает точную высоту без учета панелей Telegram
-            height = tg.viewportHeight || window.innerHeight; 
+            height = tg.viewportHeight || window.innerHeight;
             canvas.width = width;
             canvas.height = height;
         }
         window.addEventListener('resize', resize);
         resize();
 
-        const GRAVITY = 0.8;
-        const JUMP_FORCE = -14;
-        const SPEED_X = 6;
-        const WALL_WIDTH = 20;
-        const SLIDE_SPEED = 3;
-
+        // Настройки физики
+        const GRAVITY = 0.6;
+        const JUMP_FORCE = -13;
+        const MOVE_SPEED = 4;
+        
         let player;
-        let walls = [];
+        let platforms = [];
         let score = 0;
         let isPlaying = false;
         let isDead = false;
+        let cameraY = 0;
 
         function initPlayer() {
             player = {
-                x: WALL_WIDTH,
-                y: height - 100,
-                w: 24,
-                h: 24,
-                vx: 0,
+                x: width / 2 - 15,
+                y: height - 150, // Спавн на земле
+                w: 30,
+                h: 30,
+                vx: MOVE_SPEED, // Автоматическое движение
                 vy: 0,
-                isSliding: true,
-                side: 'left'
+                onGround: true
             };
         }
 
-        function initWalls() {
-            walls = [];
-            for (let i = 0; i < 10; i++) {
-                walls.push({
-                    y: height - 300 * i,
-                    leftSpike: Math.random() > 0.5,
-                    rightSpike: Math.random() > 0.5
-                });
+        function initPlatforms() {
+            platforms = [];
+            // Земля
+            platforms.push({ x: 0, y: height - 60, w: width, h: 60, isGround: true });
+            
+            // Первые платформы
+            let lastY = height - 200;
+            for (let i = 0; i < 15; i++) {
+                let pW = 80 + Math.random() * 60;
+                let pX = Math.random() * (width - pW);
+                platforms.push({ x: pX, y: lastY, w: pW, h: 15 });
+                lastY -= 100 + Math.random() * 60;
             }
         }
 
-        // Управление прыжком
+        // Управление прыжком (только тап)
         function handleInput(e) {
             if (!isPlaying || isDead) return;
-            if (e) e.preventDefault(); // Отменяем зум/скролл
-
-            if (player.isSliding) {
-                player.isSliding = false;
+            if (e) e.preventDefault();
+            
+            // Прыгаем только если стоим на земле/платформе
+            if (player.onGround) {
                 player.vy = JUMP_FORCE;
-                if (player.side === 'left') {
-                    player.vx = SPEED_X;
-                    player.side = 'right';
-                } else {
-                    player.vx = -SPEED_X;
-                    player.side = 'left';
-                }
+                player.onGround = false;
+                if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
             }
         }
 
-        // Слушаем прыжок ТОЛЬКО на холсте, чтобы не мешать кнопкам
         canvas.addEventListener('mousedown', handleInput);
         canvas.addEventListener('touchstart', handleInput, { passive: false });
 
         function update() {
             if (!isPlaying || isDead) return;
 
-            if (!player.isSliding) {
-                player.vy += GRAVITY;
-            }
-
+            // Физика
+            player.vy += GRAVITY;
             player.x += player.vx;
             player.y += player.vy;
 
-            // Левая стена
-            if (player.x <= WALL_WIDTH) {
-                player.x = WALL_WIDTH;
-                player.isSliding = true;
-                player.vx = 0;
-                player.vy = SLIDE_SPEED;
-                player.side = 'left';
-            }
-            
-            // Правая стена
-            if (player.x + player.w >= width - WALL_WIDTH) {
-                player.x = width - WALL_WIDTH - player.w;
-                player.isSliding = true;
-                player.vx = 0;
-                player.vy = SLIDE_SPEED;
-                player.side = 'right';
+            // Отскок от стен экрана
+            if (player.x <= 0) {
+                player.x = 0;
+                player.vx *= -1;
+            } else if (player.x + player.w >= width) {
+                player.x = width - player.w;
+                player.vx *= -1;
             }
 
-            if (player.isSliding) {
-                player.y += player.vy;
+            // Проверка коллизий с платформами
+            player.onGround = false;
+            for (let p of platforms) {
+                // Проверяем, приземлился ли игрок (падает вниз и касается платформы)
+                if (player.vy > 0 && 
+                    player.y + player.h > p.y && 
+                    player.y + player.h - player.vy <= p.y + 10 && // Не проваливаемся сквозь
+                    player.x + player.w > p.x && 
+                    player.x < p.x + p.w) {
+                    
+                    player.y = p.y - player.h;
+                    player.vy = 0;
+                    player.onGround = true;
+                }
             }
+
+            // Камера следует за игроком вверх
+            if (player.y < height / 2) {
+                let diff = height / 2 - player.y;
+                player.y += diff;
+                for (let p of platforms) {
+                    p.y += diff;
+                }
+                score += Math.floor(diff / 10);
+            }
+
+            // Удаляем ушедшие вниз платформы и создаем новые сверху
+            let highestY = Math.min(...platforms.map(p => p.y));
+            if (highestY > cameraY - height) {
+                let pW = 80 + Math.random() * 60;
+                let pX = Math.random() * (width - pW);
+                platforms.push({ x: pX, y: highestY - 100 - Math.random() * 60, w: pW, h: 15 });
+            }
+            platforms = platforms.filter(p => p.y < height + 200 || p.isGround);
 
             // Проверка на падение
-            if (player.y > height) {
+            if (player.y > height + 50) {
                 gameOver();
-                return;
-            }
-
-            // Движение камеры вверх
-            if (player.y < height / 2) {
-                const diff = (height / 2) - player.y;
-                player.y += diff;
-                walls.forEach(wall => {
-                    wall.y += diff;
-                });
-                score += Math.floor(diff);
-            }
-
-            // Генерация новых стен
-            for (let i = 0; i < walls.length; i++) {
-                if (walls[i].y > height + 100) {
-                    let highestY = Math.min(...walls.map(w => w.y));
-                    walls[i].y = highestY - 300;
-                    walls[i].leftSpike = Math.random() > 0.5;
-                    walls[i].rightSpike = Math.random() > 0.5;
-                }
             }
         }
 
@@ -245,27 +237,16 @@
             ctx.fillStyle = '#050507';
             ctx.fillRect(0, 0, width, height);
 
-            // Стены
-            ctx.fillStyle = '#1a1a1f';
-            ctx.fillRect(0, 0, WALL_WIDTH, height);
-            ctx.fillRect(width - WALL_WIDTH, 0, WALL_WIDTH, height);
-
-            // Шипы
-            ctx.fillStyle = '#ff4444';
-            walls.forEach(wall => {
-                if (wall.leftSpike) {
-                    ctx.beginPath();
-                    ctx.moveTo(WALL_WIDTH, wall.y + 20);
-                    ctx.lineTo(WALL_WIDTH + 15, wall.y + 10);
-                    ctx.lineTo(WALL_WIDTH, wall.y);
-                    ctx.fill();
-                }
-                if (wall.rightSpike) {
-                    ctx.beginPath();
-                    ctx.moveTo(width - WALL_WIDTH, wall.y + 20);
-                    ctx.lineTo(width - WALL_WIDTH - 15, wall.y + 10);
-                    ctx.lineTo(width - WALL_WIDTH, wall.y);
-                    ctx.fill();
+            // Платформы
+            platforms.forEach(p => {
+                if (p.isGround) {
+                    ctx.fillStyle = '#1a1a1f';
+                    ctx.fillRect(p.x, p.y, p.w, p.h);
+                } else {
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+                    ctx.fillRect(p.x, p.y, p.w, p.h);
+                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+                    ctx.strokeRect(p.x, p.y, p.w, p.h);
                 }
             });
 
@@ -294,17 +275,18 @@
         }
 
         function startGame(e) {
-            if(e) e.preventDefault(); // Важно для мобилок
+            if(e) e.preventDefault();
             document.getElementById('start-screen').classList.add('hidden');
             document.getElementById('game-over-screen').classList.add('hidden');
             
-            resize(); // Пересчитываем размеры на всякий случай
+            resize();
             score = 0;
+            cameraY = 0;
             isPlaying = true;
             isDead = false;
             
             initPlayer();
-            initWalls();
+            initPlatforms();
         }
 
         function gameOver() {
@@ -312,22 +294,17 @@
             isPlaying = false;
             document.getElementById('final-score').innerText = score;
             document.getElementById('game-over-screen').classList.remove('hidden');
-            if (tg.HapticFeedback) {
-                tg.HapticFeedback.notificationOccurred('error');
-            }
+            if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('error');
         }
 
-        // ЖЕСТКАЯ ПРИВЯЗКА КНОПОК (чтобы точно работали на телефоне)
+        // Кнопки
         const startBtn = document.getElementById('startBtn');
         const restartBtn = document.getElementById('restartBtn');
-
         startBtn.addEventListener('click', startGame);
         startBtn.addEventListener('touchstart', startGame, {passive: false});
-        
         restartBtn.addEventListener('click', startGame);
         restartBtn.addEventListener('touchstart', startGame, {passive: false});
 
-        // Запуск
         gameLoop();
     </script>
 </body>
