@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Wall Hopper</title>
+<title>Wall Kickers</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
 *{box-sizing:border-box}
@@ -42,12 +42,12 @@ font-size:12px;color:#6b6b73;pointer-events:none;font-family:'Courier New',monos
  <div class="panel">МОНЕТЫ: <span id="coins">0</span></div>
 </div>
 
-<div id="help">← → или тап по экрану</div>
+<div id="help">ТАП ПО ЭКРАНУ — ПРЫЖОК</div>
 
 <div id="menu">
  <div class="card">
-  <h1>WALL <span>HOPPER</span></h1>
-  <p>Прыгай по платформам и стенам, собирай монеты и заберись как можно выше!</p>
+  <h1>WALL <span>KICKERS</span></h1>
+  <p>Нажимай в любом месте экрана, чтобы прыгать от стены к стене. Поднимайся как можно выше!</p>
   <button id="start">НАЧАТЬ ИГРУ</button>
  </div>
 </div>
@@ -73,7 +73,7 @@ resize();
 function reset(){
  player={
   x:40,y:H-120,vx:0,vy:0,
-  side:-1,attached:true
+  side:-1, attached:true // -1 = левая стена, 1 = правая стена
  };
  steps=[];
  coins=[];
@@ -102,26 +102,23 @@ function makeStep(y){
  }
 }
 
-function jump(dir){
- if(state!=="playing")return;
+function jump(){
+ if(state!=="playing" || !player.attached)return;
 
- player.side=dir;
- player.vx=dir*4.0;  // Скорость по горизонтали
- player.vy=-8.5;     // Сила прыжка вверх
+ // Меняем сторону прыжка
+ player.side *= -1; 
+ player.vx = player.side * 5.5; // Скорость по горизонтали
+ player.vy = -11.5;             // Сила прыжка вверх
  player.attached=false;
  
  if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
 }
 
+// Обработчики нажатий (и для мыши, и для тача)
 document.addEventListener("keydown",e=>{
- if(e.key==="ArrowLeft"||e.key.toLowerCase()==="a") jump(-1);
- if(e.key==="ArrowRight"||e.key.toLowerCase()==="d") jump(1);
- if(e.code==="Space"&&state!=="playing")reset();
+ if(e.code==="Space") jump();
 });
-
-canvas.addEventListener("pointerdown",e=>{
- jump(e.clientX<W/2?-1:1);
-});
+canvas.addEventListener("pointerdown", jump);
 
 document.getElementById("start").onclick=reset;
 
@@ -144,26 +141,26 @@ function update(){
  if(state!=="playing")return;
  frame++;
 
- // ФИЗИКА
  if(!player.attached){
-  player.vy+=0.25; // Гравитация
+  player.vy+=0.4; // Гравитация
   player.x+=player.vx;
   player.y+=player.vy;
-  player.vx*=0.98; // Сопротивление воздуха
 
   let landed = false;
 
-  // 1. ПРОВЕРКА СТОЛКНОВЕНИЯ С ПЛАТФОРМАМИ (только если падаем вниз)
+  // 1. СТОЛКНОВЕНИЕ С ПЛАТФОРМАМИ (Только если падаем вниз)
   if(player.vy > 0){
       for(const s of steps){
-          // Если куб по X пересекается с платформой
+          // Проверка по X (пересекается ли куб с платформой)
           if(player.x + 12 > s.x && player.x - 12 < s.x + s.w){
-              // Если куб по Y касается платформы
+              // Проверка по Y (касается ли верхушки платформы)
               if(player.y + 12 >= s.y && player.y + 12 - player.vy <= s.y + 5){
-                  player.y = s.y - 12; // Ставим ровно на платформу
+                  player.y = s.y - 12; 
                   player.vy = 0;
                   player.vx = 0;
                   player.attached = true;
+                  // Определяем, на какой стороне мы приземлились, чтобы прыгнуть в обратную
+                  player.side = (player.x < W/2) ? -1 : 1;
                   landed = true;
                   break;
               }
@@ -171,7 +168,7 @@ function update(){
       }
   }
 
-  // 2. ПРОВЕРКА СТОЛКНОВЕНИЯ СО СТЕНАМИ (если не приземлились на платформу)
+  // 2. СТОЛКНОВЕНИЕ СО СТЕНАМИ
   if(!landed && !player.attached){
       // Левая стена
       if(player.x - 12 <= 16){
@@ -179,6 +176,7 @@ function update(){
           player.vx = 0;
           player.vy = 0;
           player.attached = true;
+          player.side = -1;
       }
       // Правая стена
       if(player.x + 12 >= W - 16){
@@ -186,14 +184,16 @@ function update(){
           player.vx = 0;
           player.vy = 0;
           player.attached = true;
+          player.side = 1;
       }
   }
  }
 
- // КАМЕРА
+ // КАМЕРА (Двигается вверх)
  const target=player.y-H*0.45;
  if(target<camera)camera+=(target-camera)*0.1;
 
+ // ГЕНЕРАЦИЯ НОВЫХ ПЛАТФОРМ
  let highest=Math.min(...steps.map(s=>s.y));
  while(highest>camera-200){
   highest-=110;
@@ -203,6 +203,7 @@ function update(){
  steps=steps.filter(s=>s.y<camera+H+100);
  coins=coins.filter(c=>c.y<camera+H+100);
 
+ // СБОР МОНЕТ
  for(const c of coins){
   if(!c.taken&&Math.hypot(player.x-c.x,player.y-c.y)<25){
    c.taken=true;
@@ -214,6 +215,7 @@ function update(){
  document.getElementById("height").textContent=
   Math.max(0,Math.floor((H-player.y+camera)/10));
 
+ // ПРОИГРЫШ
  if(player.y-camera>H+40)gameOver();
 }
 
@@ -226,6 +228,7 @@ function draw(){
  ctx.fillStyle=bg;
  ctx.fillRect(0,0,W,H);
 
+ // Звёзды
  ctx.fillStyle="rgba(255, 255, 255, 0.15)";
  for(let i=0;i<45;i++){
   const x=(i*137)%W;
@@ -246,6 +249,7 @@ function draw(){
   ctx.fillStyle="#2c2c2e";
   ctx.fillRect(s.x,y,s.w,s.h);
 
+  // Светящаяся верхушка платформы
   ctx.fillStyle="#ffffff";
   ctx.fillRect(s.x,y,s.w,2);
  }
