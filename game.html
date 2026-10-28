@@ -15,7 +15,8 @@ canvas{display:block;width:100vw;height:100vh}
 display:flex;justify-content:space-between;pointer-events:none;z-index:10}
 .panel{background:rgba(255, 255, 255, 0.04);padding:12px 16px;border-radius:12px;
 border:1px solid rgba(255, 255, 255, 0.08);font-family:'Courier New',monospace;
-font-size:16px;font-weight:700;color:#ffffff;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+font-size:15px;font-weight:700;color:#9a9aa3;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.panel span { color: #ffffff; font-size: 17px; margin-left: 5px; }
 
 #menu{position:fixed;inset:0;display:flex;align-items:center;
 justify-content:center;background:rgba(5, 5, 7, 0.85);backdrop-filter:blur(5px);z-index:20}
@@ -37,8 +38,8 @@ font-size:12px;color:#6b6b73;pointer-events:none;font-family:'Courier New',monos
 <canvas id="game"></canvas>
 
 <div id="hud">
- <div class="panel">⬆ <span id="height">0</span> м</div>
- <div class="panel">🪙 <span id="coins">0</span></div>
+ <div class="panel">ВЫСОТА: <span id="height">0</span> М</div>
+ <div class="panel">МОНЕТЫ: <span id="coins">0</span></div>
 </div>
 
 <div id="help">← → или тап по экрану</div>
@@ -46,8 +47,7 @@ font-size:12px;color:#6b6b73;pointer-events:none;font-family:'Courier New',monos
 <div id="menu">
  <div class="card">
   <h1>WALL <span>HOPPER</span></h1>
-  <p>Прыгай с одной стены на другую, собирай монеты
-  и заберись как можно выше!</p>
+  <p>Прыгай по платформам и стенам, собирай монеты и заберись как можно выше!</p>
   <button id="start">НАЧАТЬ ИГРУ</button>
  </div>
 </div>
@@ -106,16 +106,16 @@ function jump(dir){
  if(state!=="playing")return;
 
  player.side=dir;
- player.vx=dir*5.2;
- player.vy=-9.2;
+ player.vx=dir*4.0;  // Скорость по горизонтали
+ player.vy=-8.5;     // Сила прыжка вверх
  player.attached=false;
+ 
+ if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
 }
 
 document.addEventListener("keydown",e=>{
- if(e.key==="ArrowLeft"||e.key.toLowerCase()==="a")
-  jump(-1);
- if(e.key==="ArrowRight"||e.key.toLowerCase()==="d")
-  jump(1);
+ if(e.key==="ArrowLeft"||e.key.toLowerCase()==="a") jump(-1);
+ if(e.key==="ArrowRight"||e.key.toLowerCase()==="d") jump(1);
  if(e.code==="Space"&&state!=="playing")reset();
 });
 
@@ -144,33 +144,56 @@ function update(){
  if(state!=="playing")return;
  frame++;
 
+ // ФИЗИКА
  if(!player.attached){
-  player.vy+=0.3;
+  player.vy+=0.25; // Гравитация
   player.x+=player.vx;
   player.y+=player.vy;
-  player.vx*=0.995;
+  player.vx*=0.98; // Сопротивление воздуха
 
-  // Приземление на противоположную стену
-  if(player.side===-1&&player.x<32){
-   player.x=32;
-   player.vx=0;
-   player.vy=0;
-   player.attached=true;
+  let landed = false;
+
+  // 1. ПРОВЕРКА СТОЛКНОВЕНИЯ С ПЛАТФОРМАМИ (только если падаем вниз)
+  if(player.vy > 0){
+      for(const s of steps){
+          // Если куб по X пересекается с платформой
+          if(player.x + 12 > s.x && player.x - 12 < s.x + s.w){
+              // Если куб по Y касается платформы
+              if(player.y + 12 >= s.y && player.y + 12 - player.vy <= s.y + 5){
+                  player.y = s.y - 12; // Ставим ровно на платформу
+                  player.vy = 0;
+                  player.vx = 0;
+                  player.attached = true;
+                  landed = true;
+                  break;
+              }
+          }
+      }
   }
 
-  if(player.side===1&&player.x>W-32){
-   player.x=W-32;
-   player.vx=0;
-   player.vy=0;
-   player.attached=true;
+  // 2. ПРОВЕРКА СТОЛКНОВЕНИЯ СО СТЕНАМИ (если не приземлились на платформу)
+  if(!landed && !player.attached){
+      // Левая стена
+      if(player.x - 12 <= 16){
+          player.x = 16 + 12;
+          player.vx = 0;
+          player.vy = 0;
+          player.attached = true;
+      }
+      // Правая стена
+      if(player.x + 12 >= W - 16){
+          player.x = W - 16 - 12;
+          player.vx = 0;
+          player.vy = 0;
+          player.attached = true;
+      }
   }
  }
 
- // Камера следует за игроком вверх
+ // КАМЕРА
  const target=player.y-H*0.45;
  if(target<camera)camera+=(target-camera)*0.1;
 
- // Создание новых платформ
  let highest=Math.min(...steps.map(s=>s.y));
  while(highest>camera-200){
   highest-=110;
@@ -180,7 +203,6 @@ function update(){
  steps=steps.filter(s=>s.y<camera+H+100);
  coins=coins.filter(c=>c.y<camera+H+100);
 
- // Сбор монет
  for(const c of coins){
   if(!c.taken&&Math.hypot(player.x-c.x,player.y-c.y)<25){
    c.taken=true;
@@ -192,21 +214,18 @@ function update(){
  document.getElementById("height").textContent=
   Math.max(0,Math.floor((H-player.y+camera)/10));
 
- // Проигрыш при падении
  if(player.y-camera>H+40)gameOver();
 }
 
 function draw(){
  ctx.clearRect(0,0,W,H);
 
- // Фон (черный)
  const bg=ctx.createLinearGradient(0,0,0,H);
  bg.addColorStop(0,"#050507");
  bg.addColorStop(1,"#0a0a0d");
  ctx.fillStyle=bg;
  ctx.fillRect(0,0,W,H);
 
- // Звёзды (белые точки)
  ctx.fillStyle="rgba(255, 255, 255, 0.15)";
  for(let i=0;i<45;i++){
   const x=(i*137)%W;
@@ -214,7 +233,7 @@ function draw(){
   ctx.fillRect(x,y,2,2);
  }
 
- // Стены (темно-серые)
+ // Стены
  ctx.fillStyle="#1a1a1f";
  ctx.fillRect(0,0,16,H);
  ctx.fillRect(W-16,0,16,H);
@@ -227,12 +246,11 @@ function draw(){
   ctx.fillStyle="#2c2c2e";
   ctx.fillRect(s.x,y,s.w,s.h);
 
-  // Белая полоска сверху платформы
   ctx.fillStyle="#ffffff";
   ctx.fillRect(s.x,y,s.w,2);
  }
 
- // Монеты (белые)
+ // Монеты
  for(const c of coins){
   if(c.taken)continue;
   const y=c.y-camera;
@@ -248,49 +266,15 @@ function draw(){
   ctx.stroke();
  }
 
- // Персонаж
- const x=player.x,y=player.y-camera;
+ // ИГРОК (КУБ)
+ const x=player.x;
+ const y=player.y-camera;
 
- // Ноги (серые)
- ctx.strokeStyle="#6b6b73";
- ctx.lineWidth=6;
- ctx.lineCap="round";
- ctx.beginPath();
- ctx.moveTo(x-4,y+7);
- ctx.lineTo(x-9,y+16);
- ctx.moveTo(x+4,y+7);
- ctx.lineTo(x+9,y+16);
- ctx.stroke();
-
- // Тело (белое)
- ctx.fillStyle="#ffffff";
- ctx.beginPath();
- ctx.roundRect(x-10,y-8,20,22,6);
- ctx.fill();
-
- // Голова (светло-серая)
- ctx.fillStyle="#e0e0e0";
- ctx.beginPath();
- ctx.arc(x,y-15,10,0,Math.PI*2);
- ctx.fill();
-
- // Волосы (темные)
- ctx.fillStyle="#2a2a30";
- ctx.beginPath();
- ctx.arc(x,y-18,10,Math.PI,Math.PI*2);
- ctx.fill();
-
- // Глаз (черный)
- ctx.fillStyle="#050507";
- ctx.fillRect(x+(player.side===-1?-5:2),y-15,3,2);
-
- // Шарф (серый)
- ctx.fillStyle="#9a9aa3";
- ctx.beginPath();
- ctx.moveTo(x-5,y-5);
- ctx.lineTo(x-17,y);
- ctx.lineTo(x-10,y+4);
- ctx.fill();
+ ctx.shadowBlur = 15;
+ ctx.shadowColor = '#ffffff';
+ ctx.fillStyle = "#ffffff";
+ ctx.fillRect(x - 12, y - 12, 24, 24);
+ ctx.shadowBlur = 0;
 }
 
 function loop(){
