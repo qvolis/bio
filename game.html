@@ -60,20 +60,27 @@ tg.ready();
 const canvas=document.getElementById("game");
 const ctx=canvas.getContext("2d");
 
-let W,H,player,steps,coins,score,camera,state;
-let best=0,frame=0;
+let W, H;
+let player, steps, coins, score, camera, state;
+let best=0, frame=0;
+const WALL_WIDTH = 16;
 
+// Исправленное определение размеров экрана для мобилок
 function resize(){
- W=canvas.width=innerWidth;
- H=canvas.height=innerHeight;
+    const rect = canvas.getBoundingClientRect();
+    W = canvas.width = rect.width;
+    H = canvas.height = rect.height;
 }
-addEventListener("resize",resize);
+window.addEventListener("resize", resize);
 resize();
 
 function reset(){
+ // Ставим игрока на левую стену чуть выше низа
  player={
-  x:40,y:H-120,vx:0,vy:0,
-  side:-1, attached:true // -1 = левая стена, 1 = правая стена
+  x: WALL_WIDTH + 12,
+  y: H - 150,
+  vx: 0, vy: 0,
+  side: -1, attached: true
  };
  steps=[];
  coins=[];
@@ -81,50 +88,59 @@ function reset(){
  camera=0;
  frame=0;
 
- for(let i=0;i<20;i++)makeStep(H-30-i*110);
+ // Генерируем первые платформы
+ for(let i=0;i<20;i++) makeStep(H - i * 120);
 
  state="playing";
  document.getElementById("menu").style.display="none";
 }
 
 function makeStep(y){
- const side=Math.random()<0.5?-1:1;
+ // Случайно выбираем сторону: -1 (левая) или 1 (правая)
+ const side = Math.random() < 0.5 ? -1 : 1;
+ const pWidth = 80;
+ 
+ // Платформа привязывается либо к левой стене, либо к правой
+ const pX = side === -1 ? WALL_WIDTH : W - WALL_WIDTH - pWidth;
+
  steps.push({
-  x:side===-1?0:W-75,
-  y:y,w:75,h:12,side
+  x: pX,
+  y: y,
+  w: pWidth,
+  h: 12,
+  side: side
  });
 
- if(Math.random()<0.7){
+ // Добавляем монету над платформой
+ if(Math.random() < 0.6){
   coins.push({
-   x:W*0.2+Math.random()*W*0.6,
-   y:y-45,taken:false
+   x: pX + pWidth/2,
+   y: y - 50,
+   taken: false
   });
  }
 }
 
 function jump(){
- if(state!=="playing" || !player.attached)return;
+ if(state !== "playing" || !player.attached) return;
 
- // Меняем сторону прыжка
+ // Прыгаем в противоположную сторону от текущей стены
  player.side *= -1; 
- player.vx = player.side * 5.5; // Скорость по горизонтали
- player.vy = -11.5;             // Сила прыжка вверх
- player.attached=false;
+ player.vx = player.side * 5.5;
+ player.vy = -12;
+ player.attached = false;
  
  if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
 }
 
-// Обработчики нажатий (и для мыши, и для тача)
-document.addEventListener("keydown",e=>{
- if(e.code==="Space") jump();
-});
+// Обработчики
+document.addEventListener("keydown",e=>{ if(e.code==="Space") jump(); });
 canvas.addEventListener("pointerdown", jump);
-
 document.getElementById("start").onclick=reset;
 
 function gameOver(){
  state="over";
- best=Math.max(best,Math.floor((H-player.y+camera)/10));
+ best=Math.max(best, Math.floor((H-player.y+camera)/10));
 
  document.getElementById("menu").style.display="flex";
  document.querySelector(".card").innerHTML=`
@@ -138,29 +154,29 @@ function gameOver(){
 }
 
 function update(){
- if(state!=="playing")return;
+ if(state !== "playing") return;
  frame++;
 
  if(!player.attached){
-  player.vy+=0.4; // Гравитация
-  player.x+=player.vx;
-  player.y+=player.vy;
+  player.vy += 0.4; // Гравитация
+  player.x += player.vx;
+  player.y += player.vy;
 
   let landed = false;
 
-  // 1. СТОЛКНОВЕНИЕ С ПЛАТФОРМАМИ (Только если падаем вниз)
+  // 1. ПРИЗЕМЛЕНИЕ НА ПЛАТФОРМЫ
   if(player.vy > 0){
       for(const s of steps){
-          // Проверка по X (пересекается ли куб с платформой)
+          // Если куб по X пересекается с платформой
           if(player.x + 12 > s.x && player.x - 12 < s.x + s.w){
-              // Проверка по Y (касается ли верхушки платформы)
+              // Если куб по Y касается платформы сверху
               if(player.y + 12 >= s.y && player.y + 12 - player.vy <= s.y + 5){
                   player.y = s.y - 12; 
                   player.vy = 0;
                   player.vx = 0;
                   player.attached = true;
-                  // Определяем, на какой стороне мы приземлились, чтобы прыгнуть в обратную
-                  player.side = (player.x < W/2) ? -1 : 1;
+                  // Определяем сторону платформы для следующего прыжка
+                  player.side = (s.x < W/2) ? -1 : 1;
                   landed = true;
                   break;
               }
@@ -168,116 +184,111 @@ function update(){
       }
   }
 
-  // 2. СТОЛКНОВЕНИЕ СО СТЕНАМИ
+  // 2. ПРИЗЕМЛЕНИЕ НА СТЕНЫ
   if(!landed && !player.attached){
       // Левая стена
-      if(player.x - 12 <= 16){
-          player.x = 16 + 12;
-          player.vx = 0;
-          player.vy = 0;
+      if(player.x - 12 <= WALL_WIDTH){
+          player.x = WALL_WIDTH + 12;
+          player.vx = 0; player.vy = 0;
           player.attached = true;
           player.side = -1;
       }
       // Правая стена
-      if(player.x + 12 >= W - 16){
-          player.x = W - 16 - 12;
-          player.vx = 0;
-          player.vy = 0;
+      if(player.x + 12 >= W - WALL_WIDTH){
+          player.x = W - WALL_WIDTH - 12;
+          player.vx = 0; player.vy = 0;
           player.attached = true;
           player.side = 1;
       }
   }
  }
 
- // КАМЕРА (Двигается вверх)
- const target=player.y-H*0.45;
- if(target<camera)camera+=(target-camera)*0.1;
+ // КАМЕРА
+ const target = player.y - H * 0.4;
+ if(target < camera) camera += (target - camera) * 0.1;
 
- // ГЕНЕРАЦИЯ НОВЫХ ПЛАТФОРМ
- let highest=Math.min(...steps.map(s=>s.y));
- while(highest>camera-200){
-  highest-=110;
-  makeStep(highest);
+ // ГЕНЕРАЦИЯ ПЛАТФОРМ
+ if(steps.length > 0){
+     let highest = Math.min(...steps.map(s=>s.y));
+     while(highest > camera - 200){
+      highest -= 120;
+      makeStep(highest);
+     }
  }
 
- steps=steps.filter(s=>s.y<camera+H+100);
- coins=coins.filter(c=>c.y<camera+H+100);
+ // Удаление старых объектов
+ steps = steps.filter(s => s.y < camera + H + 100);
+ coins = coins.filter(c => c.y < camera + H + 100);
 
  // СБОР МОНЕТ
  for(const c of coins){
-  if(!c.taken&&Math.hypot(player.x-c.x,player.y-c.y)<25){
-   c.taken=true;
+  if(!c.taken && Math.hypot(player.x-c.x, player.y-c.y) < 25){
+   c.taken = true;
    score++;
   }
  }
 
- document.getElementById("coins").textContent=score;
- document.getElementById("height").textContent=
-  Math.max(0,Math.floor((H-player.y+camera)/10));
+ document.getElementById("coins").textContent = score;
+ document.getElementById("height").textContent = Math.max(0, Math.floor((H - player.y + camera) / 10));
 
- // ПРОИГРЫШ
- if(player.y-camera>H+40)gameOver();
+ if(player.y - camera > H + 40) gameOver();
 }
 
 function draw(){
- ctx.clearRect(0,0,W,H);
-
- const bg=ctx.createLinearGradient(0,0,0,H);
- bg.addColorStop(0,"#050507");
- bg.addColorStop(1,"#0a0a0d");
- ctx.fillStyle=bg;
- ctx.fillRect(0,0,W,H);
+ // Очистка фона
+ ctx.fillStyle = "#050507";
+ ctx.fillRect(0, 0, W, H);
 
  // Звёзды
- ctx.fillStyle="rgba(255, 255, 255, 0.15)";
- for(let i=0;i<45;i++){
-  const x=(i*137)%W;
-  const y=((i*83-camera*0.2)%H+H)%H;
-  ctx.fillRect(x,y,2,2);
+ ctx.fillStyle = "rgba(255, 255, 255, 0.15)";
+ for(let i=0; i<45; i++){
+  const x = (i * 137) % W;
+  const y = ((i * 83 - camera * 0.2) % H + H) % H;
+  ctx.fillRect(x, y, 2, 2);
  }
 
- // Стены
- ctx.fillStyle="#1a1a1f";
- ctx.fillRect(0,0,16,H);
- ctx.fillRect(W-16,0,16,H);
+ // Стены (всегда по краям)
+ ctx.fillStyle = "#1a1a1f";
+ ctx.fillRect(0, 0, WALL_WIDTH, H);
+ ctx.fillRect(W - WALL_WIDTH, 0, WALL_WIDTH, H);
 
  // Платформы
  for(const s of steps){
-  const y=s.y-camera;
-  if(y<-20||y>H+20)continue;
+  const y = s.y - camera;
+  if(y < -20 || y > H + 20) continue;
 
-  ctx.fillStyle="#2c2c2e";
-  ctx.fillRect(s.x,y,s.w,s.h);
+  ctx.fillStyle = "#2c2c2e";
+  ctx.fillRect(s.x, y, s.w, s.h);
 
-  // Светящаяся верхушка платформы
-  ctx.fillStyle="#ffffff";
-  ctx.fillRect(s.x,y,s.w,2);
+  // Светящаяся верхушка
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(s.x, y, s.w, 2);
  }
 
  // Монеты
  for(const c of coins){
-  if(c.taken)continue;
-  const y=c.y-camera;
-  if(y<-20||y>H+20)continue;
+  if(c.taken) continue;
+  const y = c.y - camera;
+  if(y < -20 || y > H + 20) continue;
 
   ctx.beginPath();
-  ctx.arc(c.x,y,7,0,Math.PI*2);
-  ctx.fillStyle="#ffffff";
+  ctx.arc(c.x, y, 7, 0, Math.PI * 2);
+  ctx.fillStyle = "#ffffff";
   ctx.fill();
 
-  ctx.strokeStyle="#9a9aa3";
-  ctx.lineWidth=2;
+  ctx.strokeStyle = "#9a9aa3";
+  ctx.lineWidth = 2;
   ctx.stroke();
  }
 
- // ИГРОК (КУБ)
- const x=player.x;
- const y=player.y-camera;
+ // ИГРОК
+ const px = player.x;
+ const py = player.y - camera;
 
  ctx.shadowBlur = 15;
  ctx.shadowColor = '#ffffff';
  ctx.fillStyle = "#ffffff";
- ctx.fillRect(x - 12, y - 12, 24, 24);
+ ctx.fillRect(px - 12, py - 12, 24, 24);
  ctx.shadowBlur = 0;
 }
 
