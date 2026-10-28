@@ -1,31 +1,35 @@
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Wall Hopper</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
 *{box-sizing:border-box}
-body{margin:0;overflow:hidden;background:#101827;color:white;
-font-family:Arial,sans-serif;touch-action:manipulation}
+body{margin:0;overflow:hidden;background:#050507;color:#ffffff;
+font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;touch-action:manipulation}
 canvas{display:block;width:100vw;height:100vh}
+
 #hud{position:fixed;top:15px;left:15px;right:15px;
-display:flex;justify-content:space-between;pointer-events:none}
-.panel{background:#101827dd;padding:12px 16px;border-radius:12px;
-border:1px solid #ffffff25;font-size:19px;font-weight:bold}
+display:flex;justify-content:space-between;pointer-events:none;z-index:10}
+.panel{background:rgba(255, 255, 255, 0.04);padding:12px 16px;border-radius:12px;
+border:1px solid rgba(255, 255, 255, 0.08);font-family:'Courier New',monospace;
+font-size:16px;font-weight:700;color:#ffffff;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+
 #menu{position:fixed;inset:0;display:flex;align-items:center;
-justify-content:center;background:#07101acc}
-.card{text-align:center;background:#172438;padding:30px;
-border-radius:22px;width:min(90%,400px)}
-h1{font-size:42px;margin:0 0 15px}
-h1 span{color:#a3ff6f}
-p{line-height:1.5;color:#c5d1e2}
-button{padding:14px 25px;border:0;border-radius:12px;
-background:#a3ff6f;color:#172438;font-size:17px;
-font-weight:bold;cursor:pointer}
+justify-content:center;background:rgba(5, 5, 7, 0.85);backdrop-filter:blur(5px);z-index:20}
+.card{text-align:center;background:rgba(255, 255, 255, 0.03);padding:40px 30px;
+border-radius:16px;width:min(90%,400px);border:1px solid rgba(255, 255, 255, 0.08);box-shadow:0 10px 40px rgba(0,0,0,0.5)}
+h1{font-size:36px;margin:0 0 15px;font-weight:800;letter-spacing:-1px}
+h1 span{color:#9a9aa3}
+p{line-height:1.5;color:#9a9aa3;font-size:14px;margin-bottom:20px}
+button{padding:16px 25px;border:0;border-radius:12px;
+background:#ffffff;color:#050507;font-size:16px;
+font-weight:800;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:transform 0.1s}
+button:active{transform:scale(0.95)}
 #help{position:fixed;bottom:15px;width:100%;text-align:center;
-font-size:13px;color:#d5e1f0;pointer-events:none}
+font-size:12px;color:#6b6b73;pointer-events:none;font-family:'Courier New',monospace;letter-spacing:1px}
 </style>
 </head>
 <body>
@@ -37,7 +41,7 @@ font-size:13px;color:#d5e1f0;pointer-events:none}
  <div class="panel">🪙 <span id="coins">0</span></div>
 </div>
 
-<div id="help">← → или A / D — прыжок между стенами</div>
+<div id="help">← → или тап по экрану</div>
 
 <div id="menu">
  <div class="card">
@@ -49,6 +53,10 @@ font-size:13px;color:#d5e1f0;pointer-events:none}
 </div>
 
 <script>
+const tg = window.Telegram.WebApp;
+tg.expand();
+tg.ready();
+
 const canvas=document.getElementById("game");
 const ctx=canvas.getContext("2d");
 
@@ -123,11 +131,13 @@ function gameOver(){
 
  document.getElementById("menu").style.display="flex";
  document.querySelector(".card").innerHTML=`
- <h1>ИГРА <span>ОКОНЧЕНА</span></h1>
- <p>Высота: ${Math.max(0,Math.floor((H-player.y+camera)/10))} м</p>
- <p>Монет собрано: ${score}</p>
- <p>Рекорд: ${best} м</p>
+ <h1 style="color:#ffffff">ИГРА <span style="color:#ff4444">ОКОНЧЕНА</span></h1>
+ <p style="color:#9a9aa3">Высота: <b style="color:#fff">${Math.max(0,Math.floor((H-player.y+camera)/10))} м</b></p>
+ <p style="color:#9a9aa3">Монет собрано: <b style="color:#fff">${score}</b></p>
+ <p style="color:#9a9aa3">Рекорд: <b style="color:#fff">${best} м</b></p>
  <button onclick="reset()">ИГРАТЬ СНОВА</button>`;
+ 
+ if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('error');
 }
 
 function update(){
@@ -189,23 +199,23 @@ function update(){
 function draw(){
  ctx.clearRect(0,0,W,H);
 
- // Фон
+ // Фон (черный)
  const bg=ctx.createLinearGradient(0,0,0,H);
- bg.addColorStop(0,"#101827");
- bg.addColorStop(1,"#1b3447");
+ bg.addColorStop(0,"#050507");
+ bg.addColorStop(1,"#0a0a0d");
  ctx.fillStyle=bg;
  ctx.fillRect(0,0,W,H);
 
- // Звёзды
- ctx.fillStyle="#ffffff40";
+ // Звёзды (белые точки)
+ ctx.fillStyle="rgba(255, 255, 255, 0.15)";
  for(let i=0;i<45;i++){
   const x=(i*137)%W;
   const y=((i*83-camera*0.2)%H+H)%H;
   ctx.fillRect(x,y,2,2);
  }
 
- // Стены
- ctx.fillStyle="#293e53";
+ // Стены (темно-серые)
+ ctx.fillStyle="#1a1a1f";
  ctx.fillRect(0,0,16,H);
  ctx.fillRect(W-16,0,16,H);
 
@@ -214,14 +224,15 @@ function draw(){
   const y=s.y-camera;
   if(y<-20||y>H+20)continue;
 
-  ctx.fillStyle="#405a70";
+  ctx.fillStyle="#2c2c2e";
   ctx.fillRect(s.x,y,s.w,s.h);
 
-  ctx.fillStyle="#a3ff6f";
-  ctx.fillRect(s.x,y,s.w,3);
+  // Белая полоска сверху платформы
+  ctx.fillStyle="#ffffff";
+  ctx.fillRect(s.x,y,s.w,2);
  }
 
- // Монеты
+ // Монеты (белые)
  for(const c of coins){
   if(c.taken)continue;
   const y=c.y-camera;
@@ -229,10 +240,10 @@ function draw(){
 
   ctx.beginPath();
   ctx.arc(c.x,y,7,0,Math.PI*2);
-  ctx.fillStyle="#ffd34e";
+  ctx.fillStyle="#ffffff";
   ctx.fill();
 
-  ctx.strokeStyle="#fff1a6";
+  ctx.strokeStyle="#9a9aa3";
   ctx.lineWidth=2;
   ctx.stroke();
  }
@@ -240,8 +251,8 @@ function draw(){
  // Персонаж
  const x=player.x,y=player.y-camera;
 
- // Ноги
- ctx.strokeStyle="#b7f4ff";
+ // Ноги (серые)
+ ctx.strokeStyle="#6b6b73";
  ctx.lineWidth=6;
  ctx.lineCap="round";
  ctx.beginPath();
@@ -251,30 +262,30 @@ function draw(){
  ctx.lineTo(x+9,y+16);
  ctx.stroke();
 
- // Тело
- ctx.fillStyle="#a3ff6f";
+ // Тело (белое)
+ ctx.fillStyle="#ffffff";
  ctx.beginPath();
  ctx.roundRect(x-10,y-8,20,22,6);
  ctx.fill();
 
- // Голова
- ctx.fillStyle="#f1c5a1";
+ // Голова (светло-серая)
+ ctx.fillStyle="#e0e0e0";
  ctx.beginPath();
  ctx.arc(x,y-15,10,0,Math.PI*2);
  ctx.fill();
 
- // Волосы
- ctx.fillStyle="#263447";
+ // Волосы (темные)
+ ctx.fillStyle="#2a2a30";
  ctx.beginPath();
  ctx.arc(x,y-18,10,Math.PI,Math.PI*2);
  ctx.fill();
 
- // Глаз
- ctx.fillStyle="#172438";
+ // Глаз (черный)
+ ctx.fillStyle="#050507";
  ctx.fillRect(x+(player.side===-1?-5:2),y-15,3,2);
 
- // Шарф
- ctx.fillStyle="#69d8ff";
+ // Шарф (серый)
+ ctx.fillStyle="#9a9aa3";
  ctx.beginPath();
  ctx.moveTo(x-5,y-5);
  ctx.lineTo(x-17,y);
