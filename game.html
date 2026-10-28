@@ -13,15 +13,19 @@
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             height: 100vh;
             overflow: hidden;
-            touch-action: none; /* Отключаем скролл и зум при тапах */
+            touch-action: none;
             user-select: none;
+            position: relative;
         }
         canvas {
             display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
             height: 100%;
+            z-index: 1; /* Холст под кнопками */
         }
-        /* Экран старта и конца игры */
         .overlay {
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
@@ -32,7 +36,7 @@
             align-items: center;
             justify-content: center;
             text-align: center;
-            z-index: 10;
+            z-index: 10; /* Кнопки поверх холста */
             transition: opacity 0.3s;
         }
         .overlay.hidden {
@@ -64,6 +68,7 @@
             text-transform: uppercase;
             cursor: pointer;
             transition: transform 0.1s;
+            z-index: 11;
         }
         .btn:active {
             transform: scale(0.95);
@@ -79,11 +84,13 @@
 </head>
 <body>
 
+    <canvas id="gameCanvas"></canvas>
+
     <!-- Экран старта -->
     <div class="overlay" id="start-screen">
         <div class="title">WALL KICKER</div>
         <div class="subtitle">// НАЖМИТЕ, ЧТОБЫ ПРЫГНУТЬ</div>
-        <button class="btn" onclick="startGame()">СТАРТ</button>
+        <button class="btn" id="startBtn">СТАРТ</button>
     </div>
 
     <!-- Экран проигрыша -->
@@ -91,10 +98,8 @@
         <div class="title" style="color: #ff4444; text-shadow: 0 0 20px rgba(255,68,68,0.5);">УПАЛ!</div>
         <div class="subtitle">// ВАШ РЕЗУЛЬТАТ</div>
         <div class="score-display" id="final-score">0</div>
-        <button class="btn" onclick="startGame()">ЕЩЕ РАЗ</button>
+        <button class="btn" id="restartBtn">ЕЩЕ РАЗ</button>
     </div>
-
-    <canvas id="gameCanvas"></canvas>
 
     <script>
         const tg = window.Telegram.WebApp;
@@ -104,7 +109,6 @@
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         
-        // Настройки размера экрана
         let width, height;
         function resize() {
             width = window.innerWidth;
@@ -115,7 +119,6 @@
         window.addEventListener('resize', resize);
         resize();
 
-        // Параметры игры
         const GRAVITY = 0.8;
         const JUMP_FORCE = -14;
         const SPEED_X = 6;
@@ -127,10 +130,7 @@
         let score = 0;
         let isPlaying = false;
         let isDead = false;
-        let cameraY = 0;
-        let currentWallSide = 'left'; // 'left' или 'right'
 
-        // Инициализация игрока
         function initPlayer() {
             player = {
                 x: WALL_WIDTH,
@@ -144,10 +144,8 @@
             };
         }
 
-        // Инициализация стен
         function initWalls() {
             walls = [];
-            // Создаем стены с шипами на разной высоте
             for (let i = 0; i < 10; i++) {
                 walls.push({
                     y: height - 300 * i,
@@ -157,13 +155,12 @@
             }
         }
 
-        // Управление
+        // Управление перенесено на canvas, чтобы не блокировать кнопки
         function handleInput(e) {
-            if (e) e.preventDefault();
             if (!isPlaying || isDead) return;
+            if (e) e.preventDefault();
 
             if (player.isSliding) {
-                // Прыжок от стены
                 player.isSliding = false;
                 player.vy = JUMP_FORCE;
                 if (player.side === 'left') {
@@ -176,25 +173,20 @@
             }
         }
 
-        // Обработчики событий (и для мыши, и для тача)
-        window.addEventListener('mousedown', handleInput);
-        window.addEventListener('touchstart', handleInput, { passive: false });
+        // Слушаем только canvas, кнопки остаются кликабельными
+        canvas.addEventListener('mousedown', handleInput);
+        canvas.addEventListener('touchstart', handleInput, { passive: false });
 
-        // Обновление физики
         function update() {
             if (!isPlaying || isDead) return;
 
-            // Гравитация
             if (!player.isSliding) {
                 player.vy += GRAVITY;
             }
 
-            // Движение по X
             player.x += player.vx;
-            // Движение по Y
             player.y += player.vy;
 
-            // Проверка столкновения с левой стеной
             if (player.x <= WALL_WIDTH) {
                 player.x = WALL_WIDTH;
                 player.isSliding = true;
@@ -203,7 +195,6 @@
                 player.side = 'left';
             }
             
-            // Проверка столкновения с правой стеной
             if (player.x + player.w >= width - WALL_WIDTH) {
                 player.x = width - WALL_WIDTH - player.w;
                 player.isSliding = true;
@@ -212,34 +203,27 @@
                 player.side = 'right';
             }
 
-            // Если скользим по стене, мы медленно спускаемся
             if (player.isSliding) {
                 player.y += player.vy;
             }
 
-            // Проверка на падение (низ экрана)
             if (player.y > height) {
                 gameOver();
                 return;
             }
 
-            // Движение камеры (когда игрок поднимается выше середины экрана)
             if (player.y < height / 2) {
                 const diff = (height / 2) - player.y;
                 player.y += diff;
-                // Сдвигаем стены и шипы вниз
                 walls.forEach(wall => {
                     wall.y += diff;
                 });
-                // Добавляем очки
                 score += Math.floor(diff);
-                document.getElementById('score-display').innerText = score;
+                document.getElementById('final-score').innerText = score; // Обновляем скрытый счет
             }
 
-            // Удаляем стены, которые ушли за нижний край, и добавляем новые сверху
             for (let i = 0; i < walls.length; i++) {
                 if (walls[i].y > height + 100) {
-                    // Находим самую верхнюю стену
                     let highestY = Math.min(...walls.map(w => w.y));
                     walls[i].y = highestY - 300;
                     walls[i].leftSpike = Math.random() > 0.5;
@@ -248,20 +232,14 @@
             }
         }
 
-        // Отрисовка
         function draw() {
-            // Очистка экрана
             ctx.fillStyle = '#050507';
             ctx.fillRect(0, 0, width, height);
 
-            // Отрисовка стен
             ctx.fillStyle = '#1a1a1f';
-            // Левая стена
             ctx.fillRect(0, 0, WALL_WIDTH, height);
-            // Правая стена
             ctx.fillRect(width - WALL_WIDTH, 0, WALL_WIDTH, height);
 
-            // Отрисовка шипов
             ctx.fillStyle = '#ff4444';
             walls.forEach(wall => {
                 if (wall.leftSpike) {
@@ -280,16 +258,14 @@
                 }
             });
 
-            // Отрисовка игрока (квадрат со свечением)
             if (player) {
                 ctx.shadowBlur = 20;
                 ctx.shadowColor = '#ffffff';
                 ctx.fillStyle = '#ffffff';
                 ctx.fillRect(player.x, player.y, player.w, player.h);
-                ctx.shadowBlur = 0; // Сбрасываем тень для остального
+                ctx.shadowBlur = 0;
             }
 
-            // Отрисовка счета на экране (в самом верху)
             if (isPlaying && !isDead) {
                 ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
                 ctx.font = 'bold 24px "Courier New", monospace';
@@ -298,14 +274,12 @@
             }
         }
 
-        // Игровой цикл
         function gameLoop() {
             update();
             draw();
             requestAnimationFrame(gameLoop);
         }
 
-        // Начало игры
         function startGame() {
             document.getElementById('start-screen').classList.add('hidden');
             document.getElementById('game-over-screen').classList.add('hidden');
@@ -318,355 +292,20 @@
             initWalls();
         }
 
-        // Конец игры
         function gameOver() {
             isDead = true;
             isPlaying = false;
             document.getElementById('final-score').innerText = score;
             document.getElementById('game-over-screen').classList.remove('hidden');
-            // Вибрация в Telegram (если поддерживается)
             if (tg.HapticFeedback) {
                 tg.HapticFeedback.notificationOccurred('error');
             }
         }
 
-        // Запуск цикла
-        gameLoop();
-    </script>
-</body>
-</html><!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Wall Kicker</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body {
-            background-color: #050507;
-            color: #ffffff;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            height: 100vh;
-            overflow: hidden;
-            touch-action: none; /* Отключаем скролл и зум при тапах */
-            user-select: none;
-        }
-        canvas {
-            display: block;
-            width: 100%;
-            height: 100%;
-        }
-        /* Экран старта и конца игры */
-        .overlay {
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(5, 5, 7, 0.85);
-            backdrop-filter: blur(5px);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            z-index: 10;
-            transition: opacity 0.3s;
-        }
-        .overlay.hidden {
-            opacity: 0;
-            pointer-events: none;
-        }
-        .title {
-            font-size: 32px;
-            font-weight: 800;
-            margin-bottom: 10px;
-            letter-spacing: -1px;
-        }
-        .subtitle {
-            color: #9a9aa3;
-            font-size: 14px;
-            margin-bottom: 30px;
-            font-family: 'Courier New', monospace;
-            letter-spacing: 2px;
-        }
-        .btn {
-            background: #ffffff;
-            color: #050507;
-            border: none;
-            padding: 15px 40px;
-            border-radius: 12px;
-            font-weight: 800;
-            font-size: 16px;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            cursor: pointer;
-            transition: transform 0.1s;
-        }
-        .btn:active {
-            transform: scale(0.95);
-        }
-        .score-display {
-            font-family: 'Courier New', monospace;
-            font-size: 64px;
-            font-weight: 800;
-            margin: 20px 0;
-            text-shadow: 0 0 20px rgba(255,255,255,0.3);
-        }
-    </style>
-</head>
-<body>
+        // Привязка кнопок
+        document.getElementById('startBtn').addEventListener('click', startGame);
+        document.getElementById('restartBtn').addEventListener('click', startGame);
 
-    <!-- Экран старта -->
-    <div class="overlay" id="start-screen">
-        <div class="title">WALL KICKER</div>
-        <div class="subtitle">// НАЖМИТЕ, ЧТОБЫ ПРЫГНУТЬ</div>
-        <button class="btn" onclick="startGame()">СТАРТ</button>
-    </div>
-
-    <!-- Экран проигрыша -->
-    <div class="overlay hidden" id="game-over-screen">
-        <div class="title" style="color: #ff4444; text-shadow: 0 0 20px rgba(255,68,68,0.5);">УПАЛ!</div>
-        <div class="subtitle">// ВАШ РЕЗУЛЬТАТ</div>
-        <div class="score-display" id="final-score">0</div>
-        <button class="btn" onclick="startGame()">ЕЩЕ РАЗ</button>
-    </div>
-
-    <canvas id="gameCanvas"></canvas>
-
-    <script>
-        const tg = window.Telegram.WebApp;
-        tg.expand();
-        tg.ready();
-
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-        
-        // Настройки размера экрана
-        let width, height;
-        function resize() {
-            width = window.innerWidth;
-            height = window.innerHeight;
-            canvas.width = width;
-            canvas.height = height;
-        }
-        window.addEventListener('resize', resize);
-        resize();
-
-        // Параметры игры
-        const GRAVITY = 0.8;
-        const JUMP_FORCE = -14;
-        const SPEED_X = 6;
-        const WALL_WIDTH = 20;
-        const SLIDE_SPEED = 3;
-
-        let player;
-        let walls = [];
-        let score = 0;
-        let isPlaying = false;
-        let isDead = false;
-        let cameraY = 0;
-        let currentWallSide = 'left'; // 'left' или 'right'
-
-        // Инициализация игрока
-        function initPlayer() {
-            player = {
-                x: WALL_WIDTH,
-                y: height - 100,
-                w: 24,
-                h: 24,
-                vx: 0,
-                vy: 0,
-                isSliding: true,
-                side: 'left'
-            };
-        }
-
-        // Инициализация стен
-        function initWalls() {
-            walls = [];
-            // Создаем стены с шипами на разной высоте
-            for (let i = 0; i < 10; i++) {
-                walls.push({
-                    y: height - 300 * i,
-                    leftSpike: Math.random() > 0.5,
-                    rightSpike: Math.random() > 0.5
-                });
-            }
-        }
-
-        // Управление
-        function handleInput(e) {
-            if (e) e.preventDefault();
-            if (!isPlaying || isDead) return;
-
-            if (player.isSliding) {
-                // Прыжок от стены
-                player.isSliding = false;
-                player.vy = JUMP_FORCE;
-                if (player.side === 'left') {
-                    player.vx = SPEED_X;
-                    player.side = 'right';
-                } else {
-                    player.vx = -SPEED_X;
-                    player.side = 'left';
-                }
-            }
-        }
-
-        // Обработчики событий (и для мыши, и для тача)
-        window.addEventListener('mousedown', handleInput);
-        window.addEventListener('touchstart', handleInput, { passive: false });
-
-        // Обновление физики
-        function update() {
-            if (!isPlaying || isDead) return;
-
-            // Гравитация
-            if (!player.isSliding) {
-                player.vy += GRAVITY;
-            }
-
-            // Движение по X
-            player.x += player.vx;
-            // Движение по Y
-            player.y += player.vy;
-
-            // Проверка столкновения с левой стеной
-            if (player.x <= WALL_WIDTH) {
-                player.x = WALL_WIDTH;
-                player.isSliding = true;
-                player.vx = 0;
-                player.vy = SLIDE_SPEED;
-                player.side = 'left';
-            }
-            
-            // Проверка столкновения с правой стеной
-            if (player.x + player.w >= width - WALL_WIDTH) {
-                player.x = width - WALL_WIDTH - player.w;
-                player.isSliding = true;
-                player.vx = 0;
-                player.vy = SLIDE_SPEED;
-                player.side = 'right';
-            }
-
-            // Если скользим по стене, мы медленно спускаемся
-            if (player.isSliding) {
-                player.y += player.vy;
-            }
-
-            // Проверка на падение (низ экрана)
-            if (player.y > height) {
-                gameOver();
-                return;
-            }
-
-            // Движение камеры (когда игрок поднимается выше середины экрана)
-            if (player.y < height / 2) {
-                const diff = (height / 2) - player.y;
-                player.y += diff;
-                // Сдвигаем стены и шипы вниз
-                walls.forEach(wall => {
-                    wall.y += diff;
-                });
-                // Добавляем очки
-                score += Math.floor(diff);
-                document.getElementById('score-display').innerText = score;
-            }
-
-            // Удаляем стены, которые ушли за нижний край, и добавляем новые сверху
-            for (let i = 0; i < walls.length; i++) {
-                if (walls[i].y > height + 100) {
-                    // Находим самую верхнюю стену
-                    let highestY = Math.min(...walls.map(w => w.y));
-                    walls[i].y = highestY - 300;
-                    walls[i].leftSpike = Math.random() > 0.5;
-                    walls[i].rightSpike = Math.random() > 0.5;
-                }
-            }
-        }
-
-        // Отрисовка
-        function draw() {
-            // Очистка экрана
-            ctx.fillStyle = '#050507';
-            ctx.fillRect(0, 0, width, height);
-
-            // Отрисовка стен
-            ctx.fillStyle = '#1a1a1f';
-            // Левая стена
-            ctx.fillRect(0, 0, WALL_WIDTH, height);
-            // Правая стена
-            ctx.fillRect(width - WALL_WIDTH, 0, WALL_WIDTH, height);
-
-            // Отрисовка шипов
-            ctx.fillStyle = '#ff4444';
-            walls.forEach(wall => {
-                if (wall.leftSpike) {
-                    ctx.beginPath();
-                    ctx.moveTo(WALL_WIDTH, wall.y + 20);
-                    ctx.lineTo(WALL_WIDTH + 15, wall.y + 10);
-                    ctx.lineTo(WALL_WIDTH, wall.y);
-                    ctx.fill();
-                }
-                if (wall.rightSpike) {
-                    ctx.beginPath();
-                    ctx.moveTo(width - WALL_WIDTH, wall.y + 20);
-                    ctx.lineTo(width - WALL_WIDTH - 15, wall.y + 10);
-                    ctx.lineTo(width - WALL_WIDTH, wall.y);
-                    ctx.fill();
-                }
-            });
-
-            // Отрисовка игрока (квадрат со свечением)
-            if (player) {
-                ctx.shadowBlur = 20;
-                ctx.shadowColor = '#ffffff';
-                ctx.fillStyle = '#ffffff';
-                ctx.fillRect(player.x, player.y, player.w, player.h);
-                ctx.shadowBlur = 0; // Сбрасываем тень для остального
-            }
-
-            // Отрисовка счета на экране (в самом верху)
-            if (isPlaying && !isDead) {
-                ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
-                ctx.font = 'bold 24px "Courier New", monospace';
-                ctx.textAlign = 'center';
-                ctx.fillText(score, width / 2, 50);
-            }
-        }
-
-        // Игровой цикл
-        function gameLoop() {
-            update();
-            draw();
-            requestAnimationFrame(gameLoop);
-        }
-
-        // Начало игры
-        function startGame() {
-            document.getElementById('start-screen').classList.add('hidden');
-            document.getElementById('game-over-screen').classList.add('hidden');
-            
-            score = 0;
-            isPlaying = true;
-            isDead = false;
-            
-            initPlayer();
-            initWalls();
-        }
-
-        // Конец игры
-        function gameOver() {
-            isDead = true;
-            isPlaying = false;
-            document.getElementById('final-score').innerText = score;
-            document.getElementById('game-over-screen').classList.remove('hidden');
-            // Вибрация в Telegram (если поддерживается)
-            if (tg.HapticFeedback) {
-                tg.HapticFeedback.notificationOccurred('error');
-            }
-        }
-
-        // Запуск цикла
         gameLoop();
     </script>
 </body>
