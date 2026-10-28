@@ -12,25 +12,23 @@ font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;to
 canvas{display:block;width:100vw;height:100vh}
 
 #hud{position:fixed;top:15px;left:15px;right:15px;
-display:flex;justify-content:space-between;pointer-events:none;z-index:10}
+display:flex;justify-content:space-between;pointer-events:none;z-index:10; opacity: 0; transition: opacity 0.3s;}
+#hud.visible { opacity: 1; }
 .panel{background:rgba(255, 255, 255, 0.04);padding:12px 16px;border-radius:12px;
 border:1px solid rgba(255, 255, 255, 0.08);font-family:'Courier New',monospace;
 font-size:15px;font-weight:700;color:#9a9aa3;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
 .panel span { color: #ffffff; font-size: 17px; margin-left: 5px; }
 
-#menu{position:fixed;inset:0;display:flex;align-items:center;
+#game-over-screen{position:fixed;inset:0;display:none;align-items:center;
 justify-content:center;background:rgba(5, 5, 7, 0.85);backdrop-filter:blur(5px);z-index:20}
 .card{text-align:center;background:rgba(255, 255, 255, 0.03);padding:40px 30px;
 border-radius:16px;width:min(90%,400px);border:1px solid rgba(255, 255, 255, 0.08);box-shadow:0 10px 40px rgba(0,0,0,0.5)}
 h1{font-size:36px;margin:0 0 15px;font-weight:800;letter-spacing:-1px}
-h1 span{color:#9a9aa3}
 p{line-height:1.5;color:#9a9aa3;font-size:14px;margin-bottom:20px}
 button{padding:16px 25px;border:0;border-radius:12px;
 background:#ffffff;color:#050507;font-size:16px;
 font-weight:800;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:transform 0.1s}
 button:active{transform:scale(0.95)}
-#help{position:fixed;bottom:15px;width:100%;text-align:center;
-font-size:12px;color:#6b6b73;pointer-events:none;font-family:'Courier New',monospace;letter-spacing:1px}
 </style>
 </head>
 <body>
@@ -42,13 +40,13 @@ font-size:12px;color:#6b6b73;pointer-events:none;font-family:'Courier New',monos
  <div class="panel">МОНЕТЫ: <span id="coins">0</span></div>
 </div>
 
-<div id="help">ТАП ПО ЭКРАНУ — ПРЫЖОК</div>
-
-<div id="menu">
+<div id="game-over-screen">
  <div class="card">
-  <h1>WALL <span>KICKERS</span></h1>
-  <p>Нажимай в любом месте экрана, чтобы прыгать от стены к стене. Поднимайся как можно выше!</p>
-  <button id="start">НАЧАТЬ ИГРУ</button>
+  <h1 style="color:#ffffff">ИГРА <span style="color:#ff4444">ОКОНЧЕНА</span></h1>
+  <p>Высота: <b id="final-height" style="color:#fff">0 м</b></p>
+  <p>Монет собрано: <b id="final-coins" style="color:#fff">0</b></p>
+  <p>Рекорд: <b id="best-score" style="color:#fff">0 м</b></p>
+  <button id="restart-btn">ИГРАТЬ СНОВА</button>
  </div>
 </div>
 
@@ -65,7 +63,6 @@ let player, steps, coins, score, camera, state;
 let best=0, frame=0;
 const WALL_WIDTH = 16;
 
-// Исправленное определение размеров экрана для мобилок
 function resize(){
     const rect = canvas.getBoundingClientRect();
     W = canvas.width = rect.width;
@@ -74,81 +71,84 @@ function resize(){
 window.addEventListener("resize", resize);
 resize();
 
+function initMenu() {
+    state = "menu";
+    player = { x: WALL_WIDTH + 12, y: H - 150, vx: 0, vy: 0, attached: true };
+    steps = [];
+    coins = [];
+    camera = 0;
+    frame = 0;
+    
+    for(let i=0;i<20;i++) makeStep(H - i * 120);
+    
+    document.getElementById("hud").classList.remove("visible");
+    document.getElementById("game-over-screen").style.display = "none";
+}
+
 function reset(){
- // Ставим игрока на левую стену чуть выше низа
- player={
-  x: WALL_WIDTH + 12,
-  y: H - 150,
-  vx: 0, vy: 0,
-  side: -1, attached: true
- };
- steps=[];
- coins=[];
- score=0;
- camera=0;
- frame=0;
+    state = "playing";
+    player = { x: WALL_WIDTH + 12, y: H - 150, vx: 0, vy: 0, attached: true };
+    steps = [];
+    coins = [];
+    score = 0;
+    camera = 0;
+    frame = 0;
 
- // Генерируем первые платформы
- for(let i=0;i<20;i++) makeStep(H - i * 120);
+    for(let i=0;i<20;i++) makeStep(H - i * 120);
 
- state="playing";
- document.getElementById("menu").style.display="none";
+    document.getElementById("hud").classList.add("visible");
+    document.getElementById("game-over-screen").style.display = "none";
 }
 
 function makeStep(y){
- // Случайно выбираем сторону: -1 (левая) или 1 (правая)
  const side = Math.random() < 0.5 ? -1 : 1;
- const pWidth = 80;
  
- // Платформа привязывается либо к левой стене, либо к правой
+ // ИЗМЕНЕНИЕ: Одинаковая ширина (узкие столбы), но разная высота
+ const pWidth = 30; // Фиксированная ширина
+ const pHeight = 60 + Math.random() * 90; // Высота от 60 до 150
+ 
  const pX = side === -1 ? WALL_WIDTH : W - WALL_WIDTH - pWidth;
 
- steps.push({
-  x: pX,
-  y: y,
-  w: pWidth,
-  h: 12,
-  side: side
- });
+ steps.push({ x: pX, y: y, w: pWidth, h: pHeight, side: side });
 
- // Добавляем монету над платформой
  if(Math.random() < 0.6){
-  coins.push({
-   x: pX + pWidth/2,
-   y: y - 50,
-   taken: false
-  });
+  coins.push({ x: pX + pWidth/2, y: y - 40 - Math.random() * 30, taken: false });
  }
 }
 
-function jump(){
- if(state !== "playing" || !player.attached) return;
+function handleTap(e) {
+    if (e) e.preventDefault();
+    
+    if (state === "menu") {
+        reset();
+        return;
+    }
+    
+    if (state !== "playing" || !player.attached) return;
 
- // Прыгаем в противоположную сторону от текущей стены
- player.side *= -1; 
- player.vx = player.side * 5.5;
- player.vy = -12;
- player.attached = false;
+    // Прыжок в противоположную сторону
+    if (player.x < W / 2) player.vx = 5.5;
+    else player.vx = -5.5;
+
+    player.vy = -12;
+    player.attached = false;
  
- if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+    if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
 }
 
-// Обработчики
-document.addEventListener("keydown",e=>{ if(e.code==="Space") jump(); });
-canvas.addEventListener("pointerdown", jump);
-document.getElementById("start").onclick=reset;
+document.addEventListener("keydown",e=>{ if(e.code==="Space") handleTap(e); });
+canvas.addEventListener("pointerdown", handleTap);
+document.getElementById("restart-btn").onclick = reset;
 
 function gameOver(){
  state="over";
  best=Math.max(best, Math.floor((H-player.y+camera)/10));
 
- document.getElementById("menu").style.display="flex";
- document.querySelector(".card").innerHTML=`
- <h1 style="color:#ffffff">ИГРА <span style="color:#ff4444">ОКОНЧЕНА</span></h1>
- <p style="color:#9a9aa3">Высота: <b style="color:#fff">${Math.max(0,Math.floor((H-player.y+camera)/10))} м</b></p>
- <p style="color:#9a9aa3">Монет собрано: <b style="color:#fff">${score}</b></p>
- <p style="color:#9a9aa3">Рекорд: <b style="color:#fff">${best} м</b></p>
- <button onclick="reset()">ИГРАТЬ СНОВА</button>`;
+ document.getElementById("final-height").textContent = Math.max(0,Math.floor((H-player.y+camera)/10)) + " м";
+ document.getElementById("final-coins").textContent = score;
+ document.getElementById("best-score").textContent = best + " м";
+ document.getElementById("game-over-screen").style.display = "flex";
+ document.getElementById("hud").classList.remove("visible");
  
  if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('error');
 }
@@ -158,25 +158,20 @@ function update(){
  frame++;
 
  if(!player.attached){
-  player.vy += 0.4; // Гравитация
+  player.vy += 0.4;
   player.x += player.vx;
   player.y += player.vy;
 
   let landed = false;
 
-  // 1. ПРИЗЕМЛЕНИЕ НА ПЛАТФОРМЫ
   if(player.vy > 0){
       for(const s of steps){
-          // Если куб по X пересекается с платформой
           if(player.x + 12 > s.x && player.x - 12 < s.x + s.w){
-              // Если куб по Y касается платформы сверху
               if(player.y + 12 >= s.y && player.y + 12 - player.vy <= s.y + 5){
                   player.y = s.y - 12; 
                   player.vy = 0;
                   player.vx = 0;
                   player.attached = true;
-                  // Определяем сторону платформы для следующего прыжка
-                  player.side = (s.x < W/2) ? -1 : 1;
                   landed = true;
                   break;
               }
@@ -184,43 +179,34 @@ function update(){
       }
   }
 
-  // 2. ПРИЗЕМЛЕНИЕ НА СТЕНЫ
   if(!landed && !player.attached){
-      // Левая стена
       if(player.x - 12 <= WALL_WIDTH){
           player.x = WALL_WIDTH + 12;
           player.vx = 0; player.vy = 0;
           player.attached = true;
-          player.side = -1;
       }
-      // Правая стена
       if(player.x + 12 >= W - WALL_WIDTH){
           player.x = W - WALL_WIDTH - 12;
           player.vx = 0; player.vy = 0;
           player.attached = true;
-          player.side = 1;
       }
   }
  }
 
- // КАМЕРА
  const target = player.y - H * 0.4;
  if(target < camera) camera += (target - camera) * 0.1;
 
- // ГЕНЕРАЦИЯ ПЛАТФОРМ
  if(steps.length > 0){
      let highest = Math.min(...steps.map(s=>s.y));
      while(highest > camera - 200){
-      highest -= 120;
+      highest -= 120 + Math.random() * 60; // Расстояние от 120 до 180
       makeStep(highest);
      }
  }
 
- // Удаление старых объектов
- steps = steps.filter(s => s.y < camera + H + 100);
- coins = coins.filter(c => c.y < camera + H + 100);
+ steps = steps.filter(s => s.y < camera + H + 150);
+ coins = coins.filter(c => c.y < camera + H + 150);
 
- // СБОР МОНЕТ
  for(const c of coins){
   if(!c.taken && Math.hypot(player.x-c.x, player.y-c.y) < 25){
    c.taken = true;
@@ -235,7 +221,6 @@ function update(){
 }
 
 function draw(){
- // Очистка фона
  ctx.fillStyle = "#050507";
  ctx.fillRect(0, 0, W, H);
 
@@ -247,7 +232,7 @@ function draw(){
   ctx.fillRect(x, y, 2, 2);
  }
 
- // Стены (всегда по краям)
+ // Стены
  ctx.fillStyle = "#1a1a1f";
  ctx.fillRect(0, 0, WALL_WIDTH, H);
  ctx.fillRect(W - WALL_WIDTH, 0, WALL_WIDTH, H);
@@ -255,14 +240,19 @@ function draw(){
  // Платформы
  for(const s of steps){
   const y = s.y - camera;
-  if(y < -20 || y > H + 20) continue;
+  if(y < -200 || y > H + 50) continue;
 
   ctx.fillStyle = "#2c2c2e";
   ctx.fillRect(s.x, y, s.w, s.h);
 
-  // Светящаяся верхушка
+  // Верхняя грань (светящаяся)
   ctx.fillStyle = "#ffffff";
   ctx.fillRect(s.x, y, s.w, 2);
+  
+  // Обводка
+  ctx.strokeStyle = "rgba(255,255,255,0.1)";
+  ctx.lineWidth = 1;
+  ctx.strokeRect(s.x, y, s.w, s.h);
  }
 
  // Монеты
@@ -290,6 +280,36 @@ function draw(){
  ctx.fillStyle = "#ffffff";
  ctx.fillRect(px - 12, py - 12, 24, 24);
  ctx.shadowBlur = 0;
+
+ // СТАРТОВЫЙ ЭКРАН
+ if (state === "menu") {
+     ctx.fillStyle = "rgba(5, 5, 7, 0.7)";
+     ctx.fillRect(0, 0, W, H);
+
+     ctx.save();
+     ctx.textAlign = "center";
+     ctx.textBaseline = "middle";
+     
+     ctx.shadowColor = "rgba(255, 255, 255, 0.4)";
+     ctx.shadowBlur = 30;
+     
+     ctx.font = "900 56px -apple-system, sans-serif";
+     ctx.fillStyle = "#ffffff";
+     ctx.fillText("WALL", W / 2, H / 3 - 30);
+     
+     ctx.fillStyle = "#9a9aa3";
+     ctx.fillText("KICKERS", W / 2, H / 3 + 30);
+     
+     ctx.restore();
+
+     ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
+     ctx.font = "bold 18px 'Courier New', monospace";
+     ctx.textAlign = "center";
+     
+     if (Math.floor(Date.now() / 500) % 2 === 0) {
+         ctx.fillText("ТАП, ЧТОБЫ ПРЫГНУТЬ", W / 2, H / 2 + 20);
+     }
+ }
 }
 
 function loop(){
@@ -298,7 +318,7 @@ function loop(){
  requestAnimationFrame(loop);
 }
 
-reset();
+initMenu();
 loop();
 </script>
 </body>
