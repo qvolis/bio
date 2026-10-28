@@ -1,311 +1,295 @@
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Platform Jumper</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        html, body {
-            background-color: #050507;
-            color: #ffffff;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            height: 100%;
-            width: 100%;
-            overflow: hidden;
-            touch-action: none;
-            user-select: none;
-            position: relative;
-        }
-        canvas {
-            display: block;
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 1;
-        }
-        .overlay {
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(5, 5, 7, 0.9);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            z-index: 10;
-            transition: opacity 0.3s;
-        }
-        .overlay.hidden {
-            opacity: 0;
-            pointer-events: none;
-        }
-        .title {
-            font-size: 32px;
-            font-weight: 800;
-            margin-bottom: 10px;
-            letter-spacing: -1px;
-        }
-        .subtitle {
-            color: #9a9aa3;
-            font-size: 14px;
-            margin-bottom: 30px;
-            font-family: 'Courier New', monospace;
-            letter-spacing: 2px;
-        }
-        .btn {
-            background: #ffffff;
-            color: #050507;
-            border: none;
-            padding: 18px 40px;
-            border-radius: 12px;
-            font-weight: 800;
-            font-size: 16px;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            cursor: pointer;
-            transition: transform 0.1s;
-            z-index: 11;
-            box-shadow: 0 4px 15px rgba(255, 255, 255, 0.2);
-        }
-        .btn:active { transform: scale(0.95); }
-        .score-display {
-            font-family: 'Courier New', monospace;
-            font-size: 64px;
-            font-weight: 800;
-            margin: 20px 0;
-            text-shadow: 0 0 20px rgba(255,255,255,0.3);
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wall Hopper</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;overflow:hidden;background:#101827;color:white;
+font-family:Arial,sans-serif;touch-action:manipulation}
+canvas{display:block;width:100vw;height:100vh}
+#hud{position:fixed;top:15px;left:15px;right:15px;
+display:flex;justify-content:space-between;pointer-events:none}
+.panel{background:#101827dd;padding:12px 16px;border-radius:12px;
+border:1px solid #ffffff25;font-size:19px;font-weight:bold}
+#menu{position:fixed;inset:0;display:flex;align-items:center;
+justify-content:center;background:#07101acc}
+.card{text-align:center;background:#172438;padding:30px;
+border-radius:22px;width:min(90%,400px)}
+h1{font-size:42px;margin:0 0 15px}
+h1 span{color:#a3ff6f}
+p{line-height:1.5;color:#c5d1e2}
+button{padding:14px 25px;border:0;border-radius:12px;
+background:#a3ff6f;color:#172438;font-size:17px;
+font-weight:bold;cursor:pointer}
+#help{position:fixed;bottom:15px;width:100%;text-align:center;
+font-size:13px;color:#d5e1f0;pointer-events:none}
+</style>
 </head>
 <body>
 
-    <canvas id="gameCanvas"></canvas>
+<canvas id="game"></canvas>
 
-    <!-- Экран старта -->
-    <div class="overlay" id="start-screen">
-        <div class="title">PLATFORM JUMPER</div>
-        <div class="subtitle">// ТАПАЙ, ЧТОБЫ ПРЫГАТЬ</div>
-        <button class="btn" id="startBtn">СТАРТ</button>
-    </div>
+<div id="hud">
+ <div class="panel">⬆ <span id="height">0</span> м</div>
+ <div class="panel">🪙 <span id="coins">0</span></div>
+</div>
 
-    <!-- Экран проигрыша -->
-    <div class="overlay hidden" id="game-over-screen">
-        <div class="title" style="color: #ff4444; text-shadow: 0 0 20px rgba(255,68,68,0.5);">УПАЛ!</div>
-        <div class="subtitle">// ТВОЙ РЕЗУЛЬТАТ</div>
-        <div class="score-display" id="final-score">0</div>
-        <button class="btn" id="restartBtn">ЕЩЕ РАЗ</button>
-    </div>
+<div id="help">← → или A / D — прыжок между стенами</div>
 
-    <script>
-        const tg = window.Telegram.WebApp;
-        tg.expand();
-        tg.ready();
+<div id="menu">
+ <div class="card">
+  <h1>WALL <span>HOPPER</span></h1>
+  <p>Прыгай с одной стены на другую, собирай монеты
+  и заберись как можно выше!</p>
+  <button id="start">НАЧАТЬ ИГРУ</button>
+ </div>
+</div>
 
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-        
-        let width, height;
-        function resize() {
-            width = window.innerWidth;
-            height = tg.viewportHeight || window.innerHeight;
-            canvas.width = width;
-            canvas.height = height;
-        }
-        window.addEventListener('resize', resize);
-        resize();
+<script>
+const canvas=document.getElementById("game");
+const ctx=canvas.getContext("2d");
 
-        // Настройки физики
-        const GRAVITY = 0.6;
-        const JUMP_FORCE = -13;
-        const MOVE_SPEED = 4;
-        
-        let player;
-        let platforms = [];
-        let score = 0;
-        let isPlaying = false;
-        let isDead = false;
-        let cameraY = 0;
+let W,H,player,steps,coins,score,camera,state;
+let best=0,frame=0;
 
-        function initPlayer() {
-            player = {
-                x: width / 2 - 15,
-                y: height - 150, // Спавн на земле
-                w: 30,
-                h: 30,
-                vx: MOVE_SPEED, // Автоматическое движение
-                vy: 0,
-                onGround: true
-            };
-        }
+function resize(){
+ W=canvas.width=innerWidth;
+ H=canvas.height=innerHeight;
+}
+addEventListener("resize",resize);
+resize();
 
-        function initPlatforms() {
-            platforms = [];
-            // Земля
-            platforms.push({ x: 0, y: height - 60, w: width, h: 60, isGround: true });
-            
-            // Первые платформы
-            let lastY = height - 200;
-            for (let i = 0; i < 15; i++) {
-                let pW = 80 + Math.random() * 60;
-                let pX = Math.random() * (width - pW);
-                platforms.push({ x: pX, y: lastY, w: pW, h: 15 });
-                lastY -= 100 + Math.random() * 60;
-            }
-        }
+function reset(){
+ player={
+  x:40,y:H-120,vx:0,vy:0,
+  side:-1,attached:true
+ };
+ steps=[];
+ coins=[];
+ score=0;
+ camera=0;
+ frame=0;
 
-        // Управление прыжком (только тап)
-        function handleInput(e) {
-            if (!isPlaying || isDead) return;
-            if (e) e.preventDefault();
-            
-            // Прыгаем только если стоим на земле/платформе
-            if (player.onGround) {
-                player.vy = JUMP_FORCE;
-                player.onGround = false;
-                if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
-            }
-        }
+ for(let i=0;i<20;i++)makeStep(H-30-i*110);
 
-        canvas.addEventListener('mousedown', handleInput);
-        canvas.addEventListener('touchstart', handleInput, { passive: false });
+ state="playing";
+ document.getElementById("menu").style.display="none";
+}
 
-        function update() {
-            if (!isPlaying || isDead) return;
+function makeStep(y){
+ const side=Math.random()<0.5?-1:1;
+ steps.push({
+  x:side===-1?0:W-75,
+  y:y,w:75,h:12,side
+ });
 
-            // Физика
-            player.vy += GRAVITY;
-            player.x += player.vx;
-            player.y += player.vy;
+ if(Math.random()<0.7){
+  coins.push({
+   x:W*0.2+Math.random()*W*0.6,
+   y:y-45,taken:false
+  });
+ }
+}
 
-            // Отскок от стен экрана
-            if (player.x <= 0) {
-                player.x = 0;
-                player.vx *= -1;
-            } else if (player.x + player.w >= width) {
-                player.x = width - player.w;
-                player.vx *= -1;
-            }
+function jump(dir){
+ if(state!=="playing")return;
 
-            // Проверка коллизий с платформами
-            player.onGround = false;
-            for (let p of platforms) {
-                // Проверяем, приземлился ли игрок (падает вниз и касается платформы)
-                if (player.vy > 0 && 
-                    player.y + player.h > p.y && 
-                    player.y + player.h - player.vy <= p.y + 10 && // Не проваливаемся сквозь
-                    player.x + player.w > p.x && 
-                    player.x < p.x + p.w) {
-                    
-                    player.y = p.y - player.h;
-                    player.vy = 0;
-                    player.onGround = true;
-                }
-            }
+ player.side=dir;
+ player.vx=dir*5.2;
+ player.vy=-9.2;
+ player.attached=false;
+}
 
-            // Камера следует за игроком вверх
-            if (player.y < height / 2) {
-                let diff = height / 2 - player.y;
-                player.y += diff;
-                for (let p of platforms) {
-                    p.y += diff;
-                }
-                score += Math.floor(diff / 10);
-            }
+document.addEventListener("keydown",e=>{
+ if(e.key==="ArrowLeft"||e.key.toLowerCase()==="a")
+  jump(-1);
+ if(e.key==="ArrowRight"||e.key.toLowerCase()==="d")
+  jump(1);
+ if(e.code==="Space"&&state!=="playing")reset();
+});
 
-            // Удаляем ушедшие вниз платформы и создаем новые сверху
-            let highestY = Math.min(...platforms.map(p => p.y));
-            if (highestY > cameraY - height) {
-                let pW = 80 + Math.random() * 60;
-                let pX = Math.random() * (width - pW);
-                platforms.push({ x: pX, y: highestY - 100 - Math.random() * 60, w: pW, h: 15 });
-            }
-            platforms = platforms.filter(p => p.y < height + 200 || p.isGround);
+canvas.addEventListener("pointerdown",e=>{
+ jump(e.clientX<W/2?-1:1);
+});
 
-            // Проверка на падение
-            if (player.y > height + 50) {
-                gameOver();
-            }
-        }
+document.getElementById("start").onclick=reset;
 
-        function draw() {
-            ctx.fillStyle = '#050507';
-            ctx.fillRect(0, 0, width, height);
+function gameOver(){
+ state="over";
+ best=Math.max(best,Math.floor((H-player.y+camera)/10));
 
-            // Платформы
-            platforms.forEach(p => {
-                if (p.isGround) {
-                    ctx.fillStyle = '#1a1a1f';
-                    ctx.fillRect(p.x, p.y, p.w, p.h);
-                } else {
-                    ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
-                    ctx.fillRect(p.x, p.y, p.w, p.h);
-                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
-                    ctx.strokeRect(p.x, p.y, p.w, p.h);
-                }
-            });
+ document.getElementById("menu").style.display="flex";
+ document.querySelector(".card").innerHTML=`
+ <h1>ИГРА <span>ОКОНЧЕНА</span></h1>
+ <p>Высота: ${Math.max(0,Math.floor((H-player.y+camera)/10))} м</p>
+ <p>Монет собрано: ${score}</p>
+ <p>Рекорд: ${best} м</p>
+ <button onclick="reset()">ИГРАТЬ СНОВА</button>`;
+}
 
-            // Игрок
-            if (player) {
-                ctx.shadowBlur = 20;
-                ctx.shadowColor = '#ffffff';
-                ctx.fillStyle = '#ffffff';
-                ctx.fillRect(player.x, player.y, player.w, player.h);
-                ctx.shadowBlur = 0;
-            }
+function update(){
+ if(state!=="playing")return;
+ frame++;
 
-            // Счет
-            if (isPlaying && !isDead) {
-                ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
-                ctx.font = 'bold 24px "Courier New", monospace';
-                ctx.textAlign = 'center';
-                ctx.fillText(score, width / 2, 60);
-            }
-        }
+ if(!player.attached){
+  player.vy+=0.3;
+  player.x+=player.vx;
+  player.y+=player.vy;
+  player.vx*=0.995;
 
-        function gameLoop() {
-            update();
-            draw();
-            requestAnimationFrame(gameLoop);
-        }
+  // Приземление на противоположную стену
+  if(player.side===-1&&player.x<32){
+   player.x=32;
+   player.vx=0;
+   player.vy=0;
+   player.attached=true;
+  }
 
-        function startGame(e) {
-            if(e) e.preventDefault();
-            document.getElementById('start-screen').classList.add('hidden');
-            document.getElementById('game-over-screen').classList.add('hidden');
-            
-            resize();
-            score = 0;
-            cameraY = 0;
-            isPlaying = true;
-            isDead = false;
-            
-            initPlayer();
-            initPlatforms();
-        }
+  if(player.side===1&&player.x>W-32){
+   player.x=W-32;
+   player.vx=0;
+   player.vy=0;
+   player.attached=true;
+  }
+ }
 
-        function gameOver() {
-            isDead = true;
-            isPlaying = false;
-            document.getElementById('final-score').innerText = score;
-            document.getElementById('game-over-screen').classList.remove('hidden');
-            if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('error');
-        }
+ // Камера следует за игроком вверх
+ const target=player.y-H*0.45;
+ if(target<camera)camera+=(target-camera)*0.1;
 
-        // Кнопки
-        const startBtn = document.getElementById('startBtn');
-        const restartBtn = document.getElementById('restartBtn');
-        startBtn.addEventListener('click', startGame);
-        startBtn.addEventListener('touchstart', startGame, {passive: false});
-        restartBtn.addEventListener('click', startGame);
-        restartBtn.addEventListener('touchstart', startGame, {passive: false});
+ // Создание новых платформ
+ let highest=Math.min(...steps.map(s=>s.y));
+ while(highest>camera-200){
+  highest-=110;
+  makeStep(highest);
+ }
 
-        gameLoop();
-    </script>
+ steps=steps.filter(s=>s.y<camera+H+100);
+ coins=coins.filter(c=>c.y<camera+H+100);
+
+ // Сбор монет
+ for(const c of coins){
+  if(!c.taken&&Math.hypot(player.x-c.x,player.y-c.y)<25){
+   c.taken=true;
+   score++;
+  }
+ }
+
+ document.getElementById("coins").textContent=score;
+ document.getElementById("height").textContent=
+  Math.max(0,Math.floor((H-player.y+camera)/10));
+
+ // Проигрыш при падении
+ if(player.y-camera>H+40)gameOver();
+}
+
+function draw(){
+ ctx.clearRect(0,0,W,H);
+
+ // Фон
+ const bg=ctx.createLinearGradient(0,0,0,H);
+ bg.addColorStop(0,"#101827");
+ bg.addColorStop(1,"#1b3447");
+ ctx.fillStyle=bg;
+ ctx.fillRect(0,0,W,H);
+
+ // Звёзды
+ ctx.fillStyle="#ffffff40";
+ for(let i=0;i<45;i++){
+  const x=(i*137)%W;
+  const y=((i*83-camera*0.2)%H+H)%H;
+  ctx.fillRect(x,y,2,2);
+ }
+
+ // Стены
+ ctx.fillStyle="#293e53";
+ ctx.fillRect(0,0,16,H);
+ ctx.fillRect(W-16,0,16,H);
+
+ // Платформы
+ for(const s of steps){
+  const y=s.y-camera;
+  if(y<-20||y>H+20)continue;
+
+  ctx.fillStyle="#405a70";
+  ctx.fillRect(s.x,y,s.w,s.h);
+
+  ctx.fillStyle="#a3ff6f";
+  ctx.fillRect(s.x,y,s.w,3);
+ }
+
+ // Монеты
+ for(const c of coins){
+  if(c.taken)continue;
+  const y=c.y-camera;
+  if(y<-20||y>H+20)continue;
+
+  ctx.beginPath();
+  ctx.arc(c.x,y,7,0,Math.PI*2);
+  ctx.fillStyle="#ffd34e";
+  ctx.fill();
+
+  ctx.strokeStyle="#fff1a6";
+  ctx.lineWidth=2;
+  ctx.stroke();
+ }
+
+ // Персонаж
+ const x=player.x,y=player.y-camera;
+
+ // Ноги
+ ctx.strokeStyle="#b7f4ff";
+ ctx.lineWidth=6;
+ ctx.lineCap="round";
+ ctx.beginPath();
+ ctx.moveTo(x-4,y+7);
+ ctx.lineTo(x-9,y+16);
+ ctx.moveTo(x+4,y+7);
+ ctx.lineTo(x+9,y+16);
+ ctx.stroke();
+
+ // Тело
+ ctx.fillStyle="#a3ff6f";
+ ctx.beginPath();
+ ctx.roundRect(x-10,y-8,20,22,6);
+ ctx.fill();
+
+ // Голова
+ ctx.fillStyle="#f1c5a1";
+ ctx.beginPath();
+ ctx.arc(x,y-15,10,0,Math.PI*2);
+ ctx.fill();
+
+ // Волосы
+ ctx.fillStyle="#263447";
+ ctx.beginPath();
+ ctx.arc(x,y-18,10,Math.PI,Math.PI*2);
+ ctx.fill();
+
+ // Глаз
+ ctx.fillStyle="#172438";
+ ctx.fillRect(x+(player.side===-1?-5:2),y-15,3,2);
+
+ // Шарф
+ ctx.fillStyle="#69d8ff";
+ ctx.beginPath();
+ ctx.moveTo(x-5,y-5);
+ ctx.lineTo(x-17,y);
+ ctx.lineTo(x-10,y+4);
+ ctx.fill();
+}
+
+function loop(){
+ update();
+ draw();
+ requestAnimationFrame(loop);
+}
+
+reset();
+loop();
+</script>
 </body>
 </html>
